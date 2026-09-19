@@ -121,13 +121,13 @@ export function BarraLateral({
             sizes="224px"
             className="object-cover object-bottom"
           />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 via-black/20 to-transparent px-3 pb-4 pt-12">
-            <p className="text-center text-[9px] font-medium uppercase leading-[1.5] tracking-[0.16em] text-card">
+          <div className="absolute inset-x-0 bottom-0 px-3 pb-4">
+            <p className="text-center text-[9px] font-medium uppercase leading-[1.5] tracking-[0.16em] text-[#2C3E33]">
               Tradição no campo
               <br />
               Visão no futuro
             </p>
-            <span className="mx-auto mt-2 block h-[2px] w-8 rounded-full bg-accent" />
+            <span className="mx-auto mt-2 block h-[2px] w-8 rounded-full bg-primary" />
           </div>
         </div>
       )}

@@ -26,5 +26,9 @@ export default async function PaginaModulo({ params }: Props) {
     notFound();
   }
 
-  return <EmBreve titulo={titulo} />;
+  return (
+    <div className="p-4 md:p-6">
+      <EmBreve titulo={titulo} />
+    </div>
+  );
 }

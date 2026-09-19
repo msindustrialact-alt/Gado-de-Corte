@@ -91,7 +91,7 @@ export function AppShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Cabecalho usuario={usuario} onMenu={aoClicarMenu} />
-          <main className="flex-1 px-4 py-4 md:px-6 md:py-6">{children}</main>
+          <main className="flex-1">{children}</main>
         </div>
       </div>
     </TooltipProvider>
