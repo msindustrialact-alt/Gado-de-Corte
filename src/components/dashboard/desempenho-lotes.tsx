@@ -30,19 +30,19 @@ export function DesempenhoLotes({ lotes }: { lotes: DesempenhoLote[] }) {
           return (
             <li
               key={lote.nome}
-              className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto] items-center gap-2"
+              className="grid w-full grid-cols-[130px_minmax(0,1fr)_90px] items-center gap-x-3"
             >
               <span className="truncate text-sm text-texto">{lote.nome}</span>
-              <div className="h-3.5 overflow-hidden rounded-sm bg-[#E8F3EC]">
+              <div className="h-3 overflow-hidden rounded-[6px] bg-[#E8F3EC]">
                 <div
-                  className="h-full rounded-sm"
+                  className="h-full rounded-[6px]"
                   style={{
                     width: `${largura}%`,
                     backgroundColor: TONS_VERDE[indice] ?? TONS_VERDE[TONS_VERDE.length - 1],
                   }}
                 />
               </div>
-              <span className="text-right text-xs tabular-nums text-texto-suave 2xl:text-sm">
+              <span className="text-right text-sm tabular-nums text-texto-suave">
                 {formatarDecimal(lote.ganhoKgDia)} kg/dia
               </span>
             </li>

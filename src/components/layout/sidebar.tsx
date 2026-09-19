@@ -96,7 +96,7 @@ export function BarraLateral({
       <nav
         aria-label="Principal"
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto py-1 [scrollbar-width:thin]",
+          "flex min-h-0 flex-1 flex-col gap-[2px] overflow-y-auto py-1 [scrollbar-width:thin]",
           recolhida ? "px-2" : "px-3",
         )}
       >
@@ -120,6 +120,10 @@ export function BarraLateral({
             fill
             sizes="224px"
             className="object-cover object-bottom"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-sidebar to-transparent"
           />
           <div className="absolute inset-x-0 bottom-0 px-3 pb-4">
             <p className="text-center text-[9px] font-medium uppercase leading-[1.5] tracking-[0.16em] text-[#2C3E33]">
@@ -277,7 +281,7 @@ function IconeLucide({
 
 function classesItem(ativo: boolean, recolhida: boolean) {
   return cn(
-    "flex h-9 w-full items-center rounded-[8px] text-sm font-medium transition-colors",
+    "flex h-[44px] w-full items-center rounded-[8px] text-[15px] font-medium transition-colors",
     recolhida ? "justify-center px-0" : "gap-3 px-3",
     ativo
       ? "bg-primary text-primary-foreground"

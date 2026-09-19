@@ -17,7 +17,7 @@ export function IconeBoi({
       viewBox="0 0 120 80"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.4"
+      strokeWidth={2.4}
       strokeLinecap="round"
       strokeLinejoin="round"
       role="img"

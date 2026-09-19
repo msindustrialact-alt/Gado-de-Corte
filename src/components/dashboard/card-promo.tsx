@@ -18,11 +18,11 @@ export function CardPromo() {
           <span className="mt-3 block h-[3px] w-10 rounded-full bg-accent" />
         </div>
         <Image
-          src="/images/logo.png"
+          src="/images/logo-branco.png"
           alt="Fazenda Joana – Serra Joana"
           width={476}
           height={170}
-          className="h-auto w-[132px]"
+          className="h-auto w-[190px]"
         />
       </div>
     </article>

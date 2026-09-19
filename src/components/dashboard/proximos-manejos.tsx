@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  ArrowUpRight,
+  ArrowRight,
   CalendarDays,
   ChevronRight,
   Pill,
@@ -39,7 +39,7 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
           className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
         >
           Ver todos
-          <ArrowUpRight className="size-3.5" />
+          <ArrowRight className="size-3.5" />
         </Link>
       </header>
 

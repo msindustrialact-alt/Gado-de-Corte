@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
+  ArrowRight,
   ArrowUp,
-  ArrowUpRight,
   ClipboardList,
   Soup,
   Syringe,
@@ -42,7 +42,7 @@ export function UltimasOcorrencias({
           className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
         >
           Ver todas
-          <ArrowUpRight className="size-3.5" />
+          <ArrowRight className="size-3.5" />
         </Link>
       </header>
 

@@ -15,20 +15,31 @@ function lerTexto(meta: User["user_metadata"], chave: string): string | null {
   return texto.length > 0 ? texto : null;
 }
 
+function nomeDoEmail(email?: string | null): string {
+  const local = email?.split("@")[0]?.trim() ?? "";
+  const partes = local
+    .replace(/\d+/g, " ")
+    .split(/[._+\-\s]+/)
+    .map((parte) => parte.trim())
+    .filter(Boolean);
+
+  if (partes.length === 0) {
+    return "Usuário";
+  }
+
+  return partes
+    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export function nomeDoUsuario(user: User): string {
-  const meta = user.user_metadata ?? {};
-  const nome =
-    lerTexto(meta, "full_name") ??
-    lerTexto(meta, "name") ??
-    lerTexto(meta, "nome") ??
-    lerTexto(meta, "display_name");
+  const nome = lerTexto(user.user_metadata ?? {}, "full_name");
 
   if (nome) {
     return nome;
   }
 
-  const local = user.email?.split("@")[0]?.trim() || "Usuário";
-  return local.charAt(0).toUpperCase() + local.slice(1);
+  return nomeDoEmail(user.email);
 }
 
 export function iniciaisDoNome(nome: string): string {

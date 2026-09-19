@@ -27,7 +27,7 @@ export function Cabecalho({
         <Menu className="size-5" />
       </Button>
 
-      <label className="relative min-w-0 flex-1 md:max-w-xl">
+      <label className="relative min-w-0 flex-1 max-w-[470px]">
         <span className="sr-only">Buscar</span>
         <Search
           aria-hidden
@@ -37,7 +37,7 @@ export function Cabecalho({
           type="search"
           autoComplete="off"
           placeholder="Buscar animal, lote, brinco, pesagem..."
-          className="h-10 rounded-full border-0 bg-app pr-4 pl-10 text-sm shadow-none placeholder:text-texto-suave focus-visible:ring-1"
+          className="h-[42px] rounded-[10px] border border-[#E4E9E6] bg-[#F1F4F2] pr-4 pl-10 text-sm shadow-none placeholder:text-texto-suave focus-visible:border-[#E4E9E6] focus-visible:ring-0"
         />
       </label>
 

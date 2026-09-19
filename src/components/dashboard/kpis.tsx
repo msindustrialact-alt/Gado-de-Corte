@@ -12,7 +12,7 @@ export function KpisDashboard({ kpis }: { kpis: Kpi[] }) {
           key={kpi.id}
           className="flex h-[112px] items-center gap-2.5 rounded-[12px] border border-border bg-card px-3 shadow-card 2xl:gap-3.5 2xl:px-3.5"
         >
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[#DDF1E6] text-primary 2xl:size-[62px]">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[#DDF1E6] text-[#1D6A3D] 2xl:size-[62px]">
             <IconeDoKpi nome={kpi.icone} />
           </div>
           <div className="min-w-0">
@@ -50,21 +50,28 @@ function formatarValor(kpi: Kpi) {
 }
 
 function IconeDoKpi({ nome }: { nome: IconeKpi }) {
+  const classeLucide = "size-[30px] text-[#1D6A3D]";
+
   if (nome === "animais") {
-    return <IconeBoi className="h-5 w-8" />;
+    return (
+      <IconeBoi
+        className="h-[30px] w-[45px] text-[#1D6A3D] [&_path]:[vector-effect:non-scaling-stroke] [&_circle]:[vector-effect:non-scaling-stroke]"
+        strokeWidth={2.25}
+      />
+    );
   }
 
   if (nome === "lotes") {
-    return <Layers className="size-6 2xl:size-7" strokeWidth={1.75} />;
+    return <Layers className={classeLucide} strokeWidth={2.25} />;
   }
 
   if (nome === "peso") {
-    return <Weight className="size-6 2xl:size-7" strokeWidth={1.75} />;
+    return <Weight className={classeLucide} strokeWidth={2.25} />;
   }
 
   if (nome === "ganho") {
-    return <TrendingUp className="size-6 2xl:size-7" strokeWidth={1.75} />;
+    return <TrendingUp className={classeLucide} strokeWidth={2.25} />;
   }
 
-  return <CircleDollarSign className="size-6 2xl:size-7" strokeWidth={1.75} />;
+  return <CircleDollarSign className={classeLucide} strokeWidth={2.25} />;
 }
