@@ -1,0 +1,44 @@
+---
+description: Regras gerais do projeto Fazenda Joana
+alwaysApply: true
+---
+
+# Projeto
+Sistema de gestão pecuária de gado de corte da "Fazenda Joana – Serra Joana".
+Interface 100% em português do Brasil. Formatos: datas dd/mm/aaaa, números 1.248 e 1,25, moeda R$ 284,50.
+
+# Stack
+Next.js (App Router) + TypeScript estrito + Tailwind + shadcn/ui + Supabase (Auth + Postgres) + Recharts + react-hook-form + zod.
+
+# Banco de dados (Supabase)
+Tabelas existentes: fazendas, fazenda_usuarios, animais, racas, lotes, piquetes.
+Views: vw_lotes_resumo, vw_piquetes_resumo.
+Função de segurança: minhas_fazendas() (retorna as fazendas do usuário logado).
+- Multi-fazenda: toda tabela de negócio tem fazenda_id e RLS ativado.
+- animais: raca_id (FK para racas), lote_id e piquete_id (FKs compostas com fazenda_id), pai_id/mae_id (auto-referência).
+- Enums: sexo_animal, categoria_animal, origem_animal, status_animal, fase_produtiva, tipo_chifre, motivo_saida, objetivo_lote, status_lote, status_piquete.
+
+# Regras de código
+- Server Components por padrão; "use client" só quando necessário.
+- Supabase: usar @supabase/ssr. Clientes em src/lib/supabase/ (client.ts, server.ts). Nunca usar service_role/secret key no front.
+- Variáveis de ambiente: NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY (a chave pode ser a publishable).
+- Tipos do banco em src/types/database.ts (gerados pelo Supabase CLI). Não inventar colunas: conferir o schema.
+- Validação de formulários com zod + react-hook-form.
+- Nunca excluir animais/lotes/piquetes fisicamente: usar deleted_at (exclusão lógica). Não existe policy de DELETE nessas tabelas.
+- Toda consulta deve considerar deleted_at is null e respeitar o RLS (fazenda do usuário).
+- Componentes pequenos e reutilizáveis em src/components; páginas finas.
+- Tratar estados de loading, erro e vazio em toda tela.
+- Responsivo (mobile first), pois o uso no curral é pelo celular.
+- Ambiente de desenvolvimento é Windows/PowerShell: nunca sugerir comandos com "&&"; usar um comando por linha.
+
+# Design (seguir as imagens em /design)
+Cores (tokens em globals.css, não usar hex solto nos componentes):
+- primary (verde escuro, menu ativo): #1D6A3D
+- primary-action (botão do login): #16A970
+- accent (verde menta, links e linhas de destaque): #2FE39A
+- bg-app: #F2F5F3 | card: #FFFFFF | border: #E4E9E6
+- texto: #1A2B22 | texto-suave: #6B7A72
+- positivo: #16A34A | alerta: #F59E0B | perigo: #DC2626 | info: #3B82F6
+- marca (logo): navy #0B2A5B, vinho #8E1B1B, laranja #F05A1A, azul #3F5AA8
+Fonte: Inter (next/font). Cards com raio 16px e sombra suave. Ícones: lucide-react.
+Textos pequenos em caixa alta com letter-spacing largo (estilo "SISTEMA DE GESTÃO PECUÁRIA").
