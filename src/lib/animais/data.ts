@@ -2,6 +2,7 @@ import { getFazendaAtiva } from "@/lib/fazenda";
 import { createClient } from "@/lib/supabase/server";
 import {
   ITENS_POR_PAGINA,
+  rotuloParente,
   sanitizarBusca,
   type AnimalDetalhe,
   type AnimalListagem,
@@ -60,8 +61,8 @@ const COLUNAS_DETALHE = `
   raca:racas ( id, nome ),
   lote:lotes!fk_animais_lote ( id, nome ),
   piquete:piquetes!fk_animais_piquete ( id, nome ),
-  pai:animais!animais_pai_id_fkey ( id, brinco, nome, deleted_at ),
-  mae:animais!animais_mae_id_fkey ( id, brinco, nome, deleted_at )
+  pai:animais!pai_id ( id, brinco, nome, deleted_at ),
+  mae:animais!mae_id ( id, brinco, nome, deleted_at )
 `;
 
 type RelacionadoBanco = RelacionadoAnimal | RelacionadoAnimal[] | null;
@@ -267,6 +268,57 @@ export async function getListaAnimais(
     de: totalFiltrado === 0 ? 0 : de + 1,
     ate: Math.min(ate + 1, totalFiltrado),
   };
+}
+
+export async function buscarParentes(params: {
+  q: string;
+  sexo: "macho" | "femea";
+  excluirId?: string;
+}): Promise<{ id: string; rotulo: string }[]> {
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return [];
+  }
+
+  const busca = sanitizarBusca(params.q);
+  const supabase = await createClient();
+
+  let consulta = supabase
+    .from("animais")
+    .select("id, brinco, nome, raca:racas ( nome )")
+    .eq("fazenda_id", fazenda.id)
+    .eq("sexo", params.sexo)
+    .is("deleted_at", null)
+    .order("brinco", { ascending: true })
+    .limit(10);
+
+  if (params.excluirId) {
+    consulta = consulta.neq("id", params.excluirId);
+  }
+
+  if (busca) {
+    consulta = consulta.or(`brinco.ilike.%${busca}%,nome.ilike.%${busca}%`);
+  }
+
+  const { data, error } = await consulta;
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((item) => {
+    const raca = Array.isArray(item.raca) ? item.raca[0] : item.raca;
+
+    return {
+      id: item.id,
+      rotulo: rotuloParente({
+        brinco: item.brinco,
+        nome: item.nome,
+        raca: raca?.nome ?? null,
+      }),
+    };
+  });
 }
 
 export async function getAnimalPorId(id: string): Promise<AnimalDetalhe | null> {

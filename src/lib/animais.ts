@@ -86,7 +86,7 @@ export type OpcaoFiltro = {
   rotulo: string;
 };
 
-const STATUS_VALIDOS: StatusAnimal[] = [
+export const STATUS_VALIDOS: StatusAnimal[] = [
   "ativo",
   "vendido",
   "abatido",
@@ -94,9 +94,9 @@ const STATUS_VALIDOS: StatusAnimal[] = [
   "transferido",
 ];
 
-const SEXOS_VALIDOS: SexoAnimal[] = ["macho", "femea"];
+export const SEXOS_VALIDOS: SexoAnimal[] = ["macho", "femea"];
 
-const CATEGORIAS_VALIDAS: CategoriaAnimal[] = [
+export const CATEGORIAS_VALIDAS: CategoriaAnimal[] = [
   "bezerro",
   "bezerra",
   "garrote",
@@ -104,6 +104,18 @@ const CATEGORIAS_VALIDAS: CategoriaAnimal[] = [
   "boi",
   "vaca",
   "touro",
+];
+
+export const FASES_VALIDAS: FaseProdutiva[] = ["cria", "recria", "engorda"];
+
+export const CHIFRES_VALIDOS: TipoChifre[] = ["mocho", "chifrudo", "descornado"];
+
+export const MOTIVOS_SAIDA_VALIDOS: MotivoSaida[] = [
+  "venda",
+  "abate",
+  "morte",
+  "descarte",
+  "transferencia",
 ];
 
 const ORDENS_VALIDAS: OrdemAnimais[] = ["brinco", "idade", "peso"];
@@ -372,4 +384,136 @@ export function temFiltrosAtivos(filtros: FiltrosAnimais): boolean {
     filtros.loteId !== "" ||
     filtros.piqueteId !== ""
   );
+}
+
+export const OPCOES_STATUS_FORM: OpcaoFiltro[] = STATUS_VALIDOS.map((valor) => ({
+  valor,
+  rotulo: LABELS_STATUS[valor],
+}));
+
+export const OPCOES_CATEGORIA_FORM: OpcaoFiltro[] = CATEGORIAS_VALIDAS.map(
+  (valor) => ({ valor, rotulo: LABELS_CATEGORIA[valor] }),
+);
+
+export const OPCOES_FASE_FORM: OpcaoFiltro[] = FASES_VALIDAS.map((valor) => ({
+  valor,
+  rotulo: LABELS_FASE[valor],
+}));
+
+export const OPCOES_CHIFRE_FORM: OpcaoFiltro[] = CHIFRES_VALIDOS.map((valor) => ({
+  valor,
+  rotulo: LABELS_CHIFRE[valor],
+}));
+
+export const OPCOES_MOTIVO_FORM: OpcaoFiltro[] = MOTIVOS_SAIDA_VALIDOS.map(
+  (valor) => ({ valor, rotulo: LABELS_MOTIVO_SAIDA[valor] }),
+);
+
+export function parseNumeroPt(valor: string | number | null | undefined): number | null {
+  if (valor == null || valor === "") {
+    return null;
+  }
+
+  if (typeof valor === "number") {
+    return Number.isFinite(valor) ? valor : null;
+  }
+
+  const texto = valor.trim();
+
+  if (!texto) {
+    return null;
+  }
+
+  const normalizado = texto.includes(",")
+    ? texto.replace(/\./g, "").replace(",", ".")
+    : texto.replace(",", ".");
+  const numero = Number(normalizado);
+
+  return Number.isFinite(numero) ? numero : null;
+}
+
+export function hojeISO(): string {
+  const agora = new Date();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+  return `${agora.getFullYear()}-${mes}-${dia}`;
+}
+
+export function mesesDeIdade(dataNascimento: string): number | null {
+  const nascimento = new Date(`${dataNascimento}T00:00:00`);
+
+  if (Number.isNaN(nascimento.getTime())) {
+    return null;
+  }
+
+  return Math.max(0, differenceInMonths(new Date(), nascimento));
+}
+
+export function sugerirCategoria(
+  sexo: SexoAnimal | "" | null | undefined,
+  dataNascimento: string | null | undefined,
+): CategoriaAnimal | null {
+  if (!sexo || !dataNascimento) {
+    return null;
+  }
+
+  const meses = mesesDeIdade(dataNascimento);
+
+  if (meses == null) {
+    return null;
+  }
+
+  if (sexo === "macho") {
+    if (meses < 8) return "bezerro";
+    if (meses <= 24) return "garrote";
+    return "boi";
+  }
+
+  if (meses < 8) return "bezerra";
+  if (meses <= 24) return "novilha";
+  return "vaca";
+}
+
+export function sugerirFase(
+  dataNascimento: string | null | undefined,
+): FaseProdutiva | null {
+  if (!dataNascimento) {
+    return null;
+  }
+
+  const meses = mesesDeIdade(dataNascimento);
+
+  if (meses == null) {
+    return null;
+  }
+
+  if (meses <= 8) return "cria";
+  if (meses <= 24) return "recria";
+  return "engorda";
+}
+
+export function motivoPorStatus(status: StatusAnimal): MotivoSaida | null {
+  if (status === "vendido") return "venda";
+  if (status === "abatido") return "abate";
+  if (status === "morto") return "morte";
+  if (status === "transferido") return "transferencia";
+  return null;
+}
+
+export function rotuloParente(animal: {
+  brinco: string;
+  nome: string | null;
+  raca?: string | null;
+}): string {
+  const partes = [animal.brinco];
+
+  if (animal.nome) {
+    partes.push(animal.nome);
+  }
+
+  if (animal.raca) {
+    partes.push(animal.raca);
+  }
+
+  return partes.join(" · ");
 }

@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
 
-import { EmBreve } from "@/components/layout/em-breve";
+import { AnimalForm } from "@/components/animais/animal-form";
+import { getOpcoesFiltroAnimais } from "@/lib/animais/data";
 
 export const metadata: Metadata = {
   title: "Novo animal | Fazenda Joana",
 };
 
-export default function PaginaNovoAnimal() {
+export default async function PaginaNovoAnimal() {
+  const opcoes = await getOpcoesFiltroAnimais();
+
   return (
     <div className="p-4 md:p-6">
-      <EmBreve titulo="Novo animal" />
+      <AnimalForm
+        modo="novo"
+        racasIniciais={opcoes.racas}
+        lotes={opcoes.lotes}
+        piquetes={opcoes.piquetes}
+      />
     </div>
   );
 }
