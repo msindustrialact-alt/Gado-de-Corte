@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   OPCOES_CATEGORIA,
+  OPCOES_PROPRIEDADE,
   OPCOES_SEXO,
   OPCOES_STATUS,
   urlAnimais,
@@ -112,7 +113,7 @@ export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
           </Sheet>
         </div>
 
-        <div className="hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-7">
+        <div className="hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-4">
           {campos}
           <div className="flex items-end">
             <Button
@@ -140,6 +141,16 @@ function CamposFiltro({
 }: Props & { onChange: (patch: Partial<FiltrosAnimais>) => void }) {
   return (
     <>
+      <CampoSelect
+        rotulo="Fazenda"
+        valor={filtros.propriedade}
+        opcoes={OPCOES_PROPRIEDADE}
+        onChange={(propriedade) =>
+          onChange({
+            propriedade: propriedade as FiltrosAnimais["propriedade"],
+          })
+        }
+      />
       <CampoSelect
         rotulo="Status"
         valor={filtros.status}

@@ -35,7 +35,7 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
           Próximos Manejos
         </h2>
         <Link
-          href="/manejo"
+          href="/pesagens"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
         >
           Ver todos
@@ -43,49 +43,55 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
         </Link>
       </header>
 
-      <ul className="flex flex-1 flex-col justify-between">
-        {manejos.map((manejo) => {
-          const { dia, mes } = formatarDiaMesExtenso(manejo.data);
-          const visual = ICONES[manejo.tipo];
-          const Icone = visual.icone;
+      {manejos.length === 0 ? (
+        <p className="flex flex-1 items-center justify-center text-center text-sm text-texto-suave">
+          Nenhum lote atrasado para pesar.
+        </p>
+      ) : (
+        <ul className="flex flex-1 flex-col justify-between">
+          {manejos.map((manejo) => {
+            const { dia, mes } = formatarDiaMesExtenso(manejo.data);
+            const visual = ICONES[manejo.tipo];
+            const Icone = visual.icone;
 
-          return (
-            <li key={manejo.id}>
-              <Link
-                href="/manejo"
-                className="flex items-center gap-2 rounded-lg hover:bg-muted/70"
-              >
-                <span className="flex size-9 shrink-0 flex-col items-center justify-center rounded-[8px] bg-[#F2F5F3]">
-                  <span className="text-[13px] leading-none font-bold text-texto">
-                    {dia}
-                  </span>
-                  <span className="mt-0.5 text-[9px] font-semibold tracking-wide text-texto-suave uppercase">
-                    {mes}
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-[8px]",
-                    visual.fundo,
-                    visual.cor,
-                  )}
+            return (
+              <li key={manejo.id}>
+                <Link
+                  href={manejo.href ?? "/pesagens"}
+                  className="flex items-center gap-2 rounded-lg hover:bg-muted/70"
                 >
-                  <Icone className="size-4" strokeWidth={1.75} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-texto">
-                    {manejo.titulo}
+                  <span className="flex size-9 shrink-0 flex-col items-center justify-center rounded-[8px] bg-[#F2F5F3]">
+                    <span className="text-[13px] leading-none font-bold text-texto">
+                      {dia}
+                    </span>
+                    <span className="mt-0.5 text-[9px] font-semibold tracking-wide text-texto-suave uppercase">
+                      {mes}
+                    </span>
                   </span>
-                  <span className="block truncate text-xs text-texto-suave">
-                    {manejo.subtitulo}
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-[8px]",
+                      visual.fundo,
+                      visual.cor,
+                    )}
+                  >
+                    <Icone className="size-4" strokeWidth={1.75} />
                   </span>
-                </span>
-                <ChevronRight className="size-4 shrink-0 text-texto-suave" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-texto">
+                      {manejo.titulo}
+                    </span>
+                    <span className="block truncate text-xs text-texto-suave">
+                      {manejo.subtitulo}
+                    </span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-texto-suave" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </CardPainel>
   );
 }

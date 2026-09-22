@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -47,6 +47,7 @@ export type Database = {
           peso_entrada: number | null
           peso_saida: number | null
           piquete_id: string | null
+          propriedade: Database["public"]["Enums"]["propriedade_animal"]
           raca_id: string | null
           sexo: Database["public"]["Enums"]["sexo_animal"]
           sisbov: string | null
@@ -88,6 +89,7 @@ export type Database = {
           peso_entrada?: number | null
           peso_saida?: number | null
           piquete_id?: string | null
+          propriedade?: Database["public"]["Enums"]["propriedade_animal"]
           raca_id?: string | null
           sexo: Database["public"]["Enums"]["sexo_animal"]
           sisbov?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           peso_entrada?: number | null
           peso_saida?: number | null
           piquete_id?: string | null
+          propriedade?: Database["public"]["Enums"]["propriedade_animal"]
           raca_id?: string | null
           sexo?: Database["public"]["Enums"]["sexo_animal"]
           sisbov?: string | null
@@ -312,6 +315,161 @@ export type Database = {
           },
         ]
       }
+      pesagem_itens: {
+        Row: {
+          animal_id: string
+          confiabilidade:
+            | Database["public"]["Enums"]["confiabilidade_gmd"]
+            | null
+          created_at: string
+          fazenda_id: string
+          id: string
+          pesagem_id: string
+          peso_kg: number
+          updated_at: string
+        }
+        Insert: {
+          animal_id: string
+          confiabilidade?:
+            | Database["public"]["Enums"]["confiabilidade_gmd"]
+            | null
+          created_at?: string
+          fazenda_id: string
+          id?: string
+          pesagem_id: string
+          peso_kg: number
+          updated_at?: string
+        }
+        Update: {
+          animal_id?: string
+          confiabilidade?:
+            | Database["public"]["Enums"]["confiabilidade_gmd"]
+            | null
+          created_at?: string
+          fazenda_id?: string
+          id?: string
+          pesagem_id?: string
+          peso_kg?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pesagem_itens_animal"
+            columns: ["fazenda_id", "animal_id"]
+            isOneToOne: false
+            referencedRelation: "animais"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "fk_pesagem_itens_pesagem"
+            columns: ["fazenda_id", "pesagem_id"]
+            isOneToOne: false
+            referencedRelation: "pesagens"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "fk_pesagem_itens_pesagem"
+            columns: ["fazenda_id", "pesagem_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pesagens_resumo"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+        ]
+      }
+      pesagens: {
+        Row: {
+          cobertura_percentual: number | null
+          condicao_pesagem:
+            | Database["public"]["Enums"]["condicao_pesagem"]
+            | null
+          created_at: string
+          created_by: string | null
+          custo_alimentacao: number | null
+          data: string
+          deleted_at: string | null
+          fazenda_id: string
+          ganho_total_kg: number | null
+          gmd_medio: number | null
+          id: string
+          lote_id: string
+          observacoes: string | null
+          peso_medio: number | null
+          qtd_animais_lote: number | null
+          qtd_pesados: number | null
+          status: Database["public"]["Enums"]["status_pesagem"]
+          uniformidade_cv: number | null
+          updated_at: string
+        }
+        Insert: {
+          cobertura_percentual?: number | null
+          condicao_pesagem?:
+            | Database["public"]["Enums"]["condicao_pesagem"]
+            | null
+          created_at?: string
+          created_by?: string | null
+          custo_alimentacao?: number | null
+          data?: string
+          deleted_at?: string | null
+          fazenda_id: string
+          ganho_total_kg?: number | null
+          gmd_medio?: number | null
+          id?: string
+          lote_id: string
+          observacoes?: string | null
+          peso_medio?: number | null
+          qtd_animais_lote?: number | null
+          qtd_pesados?: number | null
+          status?: Database["public"]["Enums"]["status_pesagem"]
+          uniformidade_cv?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cobertura_percentual?: number | null
+          condicao_pesagem?:
+            | Database["public"]["Enums"]["condicao_pesagem"]
+            | null
+          created_at?: string
+          created_by?: string | null
+          custo_alimentacao?: number | null
+          data?: string
+          deleted_at?: string | null
+          fazenda_id?: string
+          ganho_total_kg?: number | null
+          gmd_medio?: number | null
+          id?: string
+          lote_id?: string
+          observacoes?: string | null
+          peso_medio?: number | null
+          qtd_animais_lote?: number | null
+          qtd_pesados?: number | null
+          status?: Database["public"]["Enums"]["status_pesagem"]
+          uniformidade_cv?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pesagens_lote"
+            columns: ["fazenda_id", "lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "fk_pesagens_lote"
+            columns: ["fazenda_id", "lote_id"]
+            isOneToOne: false
+            referencedRelation: "vw_lotes_resumo"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "pesagens_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       piquetes: {
         Row: {
           area_ha: number | null
@@ -425,6 +583,58 @@ export type Database = {
           },
         ]
       }
+      vw_pesagens_resumo: {
+        Row: {
+          cobertura_percentual: number | null
+          condicao_pesagem:
+            | Database["public"]["Enums"]["condicao_pesagem"]
+            | null
+          created_at: string | null
+          custo_alimentacao: number | null
+          custo_por_arroba: number | null
+          data: string | null
+          deleted_at: string | null
+          fazenda_id: string | null
+          ganho_total_kg: number | null
+          gmd_medio: number | null
+          id: string | null
+          lote_id: string | null
+          lote_nome: string | null
+          lote_objetivo: Database["public"]["Enums"]["objetivo_lote"] | null
+          lote_status: Database["public"]["Enums"]["status_lote"] | null
+          observacoes: string | null
+          peso_medio: number | null
+          peso_total: number | null
+          qtd_animais_lote: number | null
+          qtd_pesados: number | null
+          status: Database["public"]["Enums"]["status_pesagem"] | null
+          uniformidade_cv: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pesagens_lote"
+            columns: ["fazenda_id", "lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "fk_pesagens_lote"
+            columns: ["fazenda_id", "lote_id"]
+            isOneToOne: false
+            referencedRelation: "vw_lotes_resumo"
+            referencedColumns: ["fazenda_id", "id"]
+          },
+          {
+            foreignKeyName: "pesagens_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_piquetes_resumo: {
         Row: {
           area_ha: number | null
@@ -455,7 +665,12 @@ export type Database = {
       }
     }
     Functions: {
+      hoje_fazenda: { Args: never; Returns: string }
       minhas_fazendas: { Args: never; Returns: string[] }
+      sincronizar_peso_animal: {
+        Args: { p_animal_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       categoria_animal:
@@ -466,6 +681,8 @@ export type Database = {
         | "boi"
         | "vaca"
         | "touro"
+      condicao_pesagem: "sem_jejum" | "jejum_ate_12h" | "jejum_mais_12h"
+      confiabilidade_gmd: "alta" | "media" | "baixa" | "sem_referencia"
       fase_produtiva: "cria" | "recria" | "engorda"
       motivo_saida: "venda" | "abate" | "morte" | "descarte" | "transferencia"
       objetivo_lote:
@@ -476,9 +693,11 @@ export type Database = {
         | "quarentena"
         | "venda"
       origem_animal: "nascido_fazenda" | "comprado"
+      propriedade_animal: "joana" | "catagua"
       sexo_animal: "macho" | "femea"
       status_animal: "ativo" | "vendido" | "abatido" | "morto" | "transferido"
       status_lote: "ativo" | "encerrado"
+      status_pesagem: "rascunho" | "concluida"
       status_piquete: "ativo" | "em_descanso" | "em_reforma" | "inativo"
       tipo_chifre: "mocho" | "chifrudo" | "descornado"
     }
@@ -496,12 +715,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -525,11 +744,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -550,11 +769,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -575,11 +794,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -592,11 +811,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -617,6 +836,8 @@ export const Constants = {
         "vaca",
         "touro",
       ],
+      condicao_pesagem: ["sem_jejum", "jejum_ate_12h", "jejum_mais_12h"],
+      confiabilidade_gmd: ["alta", "media", "baixa", "sem_referencia"],
       fase_produtiva: ["cria", "recria", "engorda"],
       motivo_saida: ["venda", "abate", "morte", "descarte", "transferencia"],
       objetivo_lote: [
@@ -628,9 +849,11 @@ export const Constants = {
         "venda",
       ],
       origem_animal: ["nascido_fazenda", "comprado"],
+      propriedade_animal: ["joana", "catagua"],
       sexo_animal: ["macho", "femea"],
       status_animal: ["ativo", "vendido", "abatido", "morto", "transferido"],
       status_lote: ["ativo", "encerrado"],
+      status_pesagem: ["rascunho", "concluida"],
       status_piquete: ["ativo", "em_descanso", "em_reforma", "inativo"],
       tipo_chifre: ["mocho", "chifrudo", "descornado"],
     },

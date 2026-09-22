@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimalDetalhe } from "@/components/animais/animal-detalhe";
 import { buttonVariants } from "@/components/ui/button";
 import { getAnimalPorId } from "@/lib/animais/data";
+import { getHistoricoAnimal } from "@/lib/pesagens/data";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -16,14 +17,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: animal
-      ? `${animal.brinco} | Animais | Fazenda Joana`
-      : "Animal não encontrado | Fazenda Joana",
+      ? `${animal.brinco} | Animais | Fazendas Joana e Cataguá`
+      : "Animal não encontrado | Fazendas Joana e Cataguá",
   };
 }
 
 export default async function PaginaAnimal({ params }: Props) {
   const { id } = await params;
-  const animal = await getAnimalPorId(id);
+  const [animal, desempenho] = await Promise.all([
+    getAnimalPorId(id),
+    getHistoricoAnimal(id),
+  ]);
 
   if (!animal) {
     return (
@@ -50,5 +54,5 @@ export default async function PaginaAnimal({ params }: Props) {
     );
   }
 
-  return <AnimalDetalhe animal={animal} />;
+  return <AnimalDetalhe animal={animal} desempenho={desempenho} />;
 }

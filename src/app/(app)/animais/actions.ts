@@ -15,10 +15,6 @@ export type ResultadoAnimal =
   | { ok: true; id: string }
   | { ok: false; message: string; fieldErrors?: Record<string, string[]> };
 
-export type ResultadoRaca =
-  | { ok: true; id: string; nome: string }
-  | { ok: false; message: string };
-
 export async function arquivarAnimal(
   id: string,
 ): Promise<{ ok: true } | { ok: false; mensagem: string }> {
@@ -52,6 +48,8 @@ export async function arquivarAnimal(
   revalidatePath("/animais");
   revalidatePath(`/animais/${id}`);
   revalidatePath(`/animais/${id}/editar`);
+  revalidatePath("/lotes");
+  revalidatePath("/pastagens");
 
   return { ok: true };
 }
@@ -62,70 +60,6 @@ export async function buscarParentes(params: {
   excluirId?: string;
 }) {
   return buscarParentesDados(params);
-}
-
-export async function criarRaca(nomeBruto: string): Promise<ResultadoRaca> {
-  const nome = nomeBruto.trim();
-
-  if (!nome) {
-    return { ok: false, message: "Informe o nome da raça." };
-  }
-
-  const fazenda = await getFazendaAtiva();
-
-  if (!fazenda) {
-    return { ok: false, message: "Não foi possível identificar a fazenda." };
-  }
-
-  const supabase = await createClient();
-  const { data: existentes, error: erroBusca } = await supabase
-    .from("racas")
-    .select("id, nome")
-    .eq("ativa", true)
-    .or(`fazenda_id.is.null,fazenda_id.eq.${fazenda.id}`)
-    .ilike("nome", nome);
-
-  if (!erroBusca) {
-    const igual = (existentes ?? []).find(
-      (raca) => raca.nome.localeCompare(nome, "pt-BR", { sensitivity: "accent" }) === 0,
-    );
-
-    if (igual) {
-      return { ok: true, id: igual.id, nome: igual.nome };
-    }
-  }
-
-  const { data, error } = await supabase
-    .from("racas")
-    .insert({
-      nome,
-      fazenda_id: fazenda.id,
-      ativa: true,
-    })
-    .select("id, nome")
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      const { data: conflito } = await supabase
-        .from("racas")
-        .select("id, nome")
-        .eq("fazenda_id", fazenda.id)
-        .ilike("nome", nome)
-        .maybeSingle();
-
-      if (conflito) {
-        return { ok: true, id: conflito.id, nome: conflito.nome };
-      }
-    }
-
-    return { ok: false, message: "Não foi possível cadastrar a raça." };
-  }
-
-  revalidatePath("/animais/novo");
-  revalidatePath("/animais");
-
-  return { ok: true, id: data.id, nome: data.nome };
 }
 
 function traduzirErroPostgres(
@@ -171,6 +105,23 @@ function traduzirErroPostgres(
     return {
       ok: false,
       message: "Já existe um animal com estes dados nesta fazenda.",
+    };
+  }
+
+  if (
+    error.code === "P0001" ||
+    mensagem.includes("módulo de pesagens") ||
+    mensagem.includes("Registrar pesagem")
+  ) {
+    return {
+      ok: false,
+      message:
+        "Peso atual só pode ser alterado pelo módulo de pesagens. Use Registrar pesagem ou o histórico do animal.",
+      fieldErrors: {
+        peso_atual: [
+          "Peso controlado pelo histórico de pesagens concluídas.",
+        ],
+      },
     };
   }
 
@@ -228,6 +179,8 @@ export async function criarAnimal(dados: unknown): Promise<ResultadoAnimal> {
 
   revalidatePath("/animais");
   revalidatePath(`/animais/${data.id}`);
+  revalidatePath("/lotes");
+  revalidatePath("/pastagens");
 
   return { ok: true, id: data.id };
 }
@@ -280,6 +233,8 @@ export async function atualizarAnimal(
   revalidatePath("/animais");
   revalidatePath(`/animais/${id}`);
   revalidatePath(`/animais/${id}/editar`);
+  revalidatePath("/lotes");
+  revalidatePath("/pastagens");
 
   return { ok: true, id: data.id };
 }

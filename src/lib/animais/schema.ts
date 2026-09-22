@@ -14,6 +14,7 @@ import {
   type SexoAnimal,
   type StatusAnimal,
   type TipoChifre,
+  type PropriedadeAnimal,
 } from "@/lib/animais";
 import type { TablesInsert, TablesUpdate } from "@/types/database";
 
@@ -112,6 +113,9 @@ export const schemaAnimal = z
     }, "Fase produtiva inválida."),
     lote_id: uuidOpcional,
     piquete_id: uuidOpcional,
+    propriedade: z.string().refine((valor) => valor === "joana" || valor === "catagua", {
+      message: "Selecione a fazenda.",
+    }),
     peso_atual: z.string(),
     data_ultima_pesagem: dataOpcional,
     escore_corporal: z.string(),
@@ -297,6 +301,7 @@ export const VALORES_PADRAO_ANIMAL: AnimalFormInput = {
   fase_produtiva: "",
   lote_id: "",
   piquete_id: "",
+  propriedade: "",
   peso_atual: "",
   data_ultima_pesagem: "",
   escore_corporal: "",
@@ -355,6 +360,7 @@ export function paraRegistroAnimal(
       (vazioParaNulo(dados.fase_produtiva) as FaseProdutiva | null) ?? null,
     lote_id: vazioParaNulo(dados.lote_id),
     piquete_id: vazioParaNulo(dados.piquete_id),
+    propriedade: dados.propriedade as PropriedadeAnimal,
     peso_atual: parseNumeroPt(dados.peso_atual),
     data_ultima_pesagem: vazioParaNulo(dados.data_ultima_pesagem),
     escore_corporal: escore == null ? null : Math.round(escore),

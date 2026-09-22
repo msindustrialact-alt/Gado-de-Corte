@@ -11,11 +11,13 @@ export function AnimaisPaginacao({
   total,
   de,
   ate,
+  caminho = "/animais",
 }: {
   filtros: FiltrosAnimais;
   total: number;
   de: number;
   ate: number;
+  caminho?: string;
 }) {
   if (total === 0) {
     return null;
@@ -34,7 +36,7 @@ export function AnimaisPaginacao({
       <div className="flex items-center gap-2">
         {temAnterior ? (
           <Link
-            href={urlAnimais(filtros, { pagina: filtros.pagina - 1 })}
+            href={urlAnimais(filtros, { pagina: filtros.pagina - 1 }, caminho)}
             className={cn(
               buttonVariants({ variant: "outline" }),
               "h-9 rounded-[10px]",
@@ -56,7 +58,7 @@ export function AnimaisPaginacao({
         )}
         {temProxima ? (
           <Link
-            href={urlAnimais(filtros, { pagina: filtros.pagina + 1 })}
+            href={urlAnimais(filtros, { pagina: filtros.pagina + 1 }, caminho)}
             className={cn(
               buttonVariants({ variant: "outline" }),
               "h-9 rounded-[10px]",

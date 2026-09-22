@@ -14,8 +14,8 @@ export function BannerDashboard() {
 
       <div className="relative z-10 flex h-full items-center justify-between">
         <div className="max-w-xl py-6 pl-[38px] pr-6">
-          <p className="text-[15px] font-medium tracking-[0.35em] text-white uppercase">
-            Fazenda Joana
+          <p className="text-[15px] font-medium tracking-[0.18em] text-white uppercase">
+            Fazendas Joana e Cataguá
           </p>
           <h2 className="mt-2 text-[28px] leading-[1.15] font-bold text-white md:text-[40px]">
             Pecuária de corte

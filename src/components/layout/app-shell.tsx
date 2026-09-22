@@ -80,7 +80,7 @@ export function AppShell({
           >
             <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
             <SheetDescription className="sr-only">
-              Navegação principal do sistema da Fazenda Joana
+              Navegação principal do sistema das Fazendas Joana e Cataguá
             </SheetDescription>
             <BarraLateral
               recolhida={false}

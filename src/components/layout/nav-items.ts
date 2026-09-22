@@ -72,8 +72,8 @@ export const ITENS_NAV: ItemNav[] = [
     icone: "cadastros",
     filhos: [
       { titulo: "Raças", href: "/cadastros/racas" },
-      { titulo: "Lotes", href: "/cadastros/lotes" },
-      { titulo: "Piquetes", href: "/cadastros/piquetes" },
+      { titulo: "Lotes", href: "/lotes" },
+      { titulo: "Piquetes", href: "/pastagens" },
       { titulo: "Fornecedores", href: "/cadastros/fornecedores" },
     ],
   },

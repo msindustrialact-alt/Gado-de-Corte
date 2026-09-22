@@ -33,7 +33,11 @@ export function EvolucaoPeso({ dados }: { dados: PontoEvolucaoPeso[] }) {
         />
       </header>
 
-      {pronto ? (
+      {dados.length === 0 ? (
+        <p className="flex flex-1 items-center justify-center text-center text-sm text-texto-suave">
+          A curva entra depois das primeiras pesagens concluídas.
+        </p>
+      ) : pronto ? (
         <ChartContainer
           config={CONFIG}
           className="aspect-auto min-h-0 w-full flex-1"
@@ -62,8 +66,6 @@ export function EvolucaoPeso({ dados }: { dados: PontoEvolucaoPeso[] }) {
               tick={{ fill: "#6B7A72", fontSize: 12 }}
             />
             <YAxis
-              domain={[150, 400]}
-              ticks={[150, 200, 250, 300, 350, 400]}
               axisLine={false}
               tickLine={false}
               width={48}

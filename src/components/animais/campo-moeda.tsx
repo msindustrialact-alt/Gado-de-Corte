@@ -42,12 +42,14 @@ export function CampoMoeda({
   valor,
   onChange,
   erro,
+  desabilitado,
 }: {
   id: string;
   rotulo: string;
   valor: string;
   onChange: (valor: string) => void;
   erro?: string;
+  desabilitado?: boolean;
 }) {
   return (
     <div className="min-w-0">
@@ -62,6 +64,7 @@ export function CampoMoeda({
           id={id}
           inputMode="decimal"
           autoComplete="off"
+          disabled={desabilitado}
           aria-invalid={erro ? true : undefined}
           value={valor}
           onChange={(evento) =>

@@ -14,7 +14,7 @@ import { formatarInteiro } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Animais | Fazenda Joana",
+  title: "Animais | Fazendas Joana e Cataguá",
 };
 
 type Props = {

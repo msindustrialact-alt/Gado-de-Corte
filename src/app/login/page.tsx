@@ -6,8 +6,8 @@ import { LoginForm } from "@/components/login/login-form";
 import "./login.css";
 
 export const metadata: Metadata = {
-  title: "Entrar | Fazenda Joana",
-  description: "Acesse o sistema de gestão pecuária da Fazenda Joana.",
+  title: "Entrar | Fazendas Joana e Cataguá",
+  description: "Acesse o sistema de gestão pecuária das Fazendas Joana e Cataguá.",
 };
 
 function EscudoCadeado() {
@@ -49,26 +49,30 @@ export default function LoginPage() {
     <main className="login-page">
       <div className="login-stage">
         <Image
-          src="/images/login-bg-v2.jpg"
+          src="/images/login-bg-v3.jpg"
           alt=""
           fill
           priority
+          quality={100}
           sizes="100vw"
           className="login-bg"
         />
 
-        <Image
-          src="/images/logo.png"
-          alt="Fazenda Joana – Serra Joana"
-          width={476}
-          height={170}
-          priority
-          className="login-logo"
-        />
+        <div className="login-panel">
+          <Image
+            src="/images/logo.png"
+            alt="Grupo Consociados – Fazendas Joana e Cataguá"
+            width={1619}
+            height={971}
+            priority
+            quality={100}
+            className="login-logo"
+          />
 
-        <section className="login-card">
-          <LoginForm />
-        </section>
+          <section className="login-card">
+            <LoginForm />
+          </section>
+        </div>
 
         <p className="login-mid-right">
           Pecuária
@@ -84,22 +88,13 @@ export default function LoginPage() {
 
       <div className="login-top-right">
         <p className="login-top-kicker">Sistema de gestão pecuária</p>
-        <p className="login-top-name">Fazenda Joana</p>
+        <p className="login-top-name">Fazendas Joana e Cataguá</p>
         <span className="login-top-rule" />
       </div>
 
       <div className="login-footer-left">
-        <Image
-          src="/images/icone-boi.svg"
-          alt=""
-          width={60}
-          height={40}
-          className="login-footer-icon"
-        />
-        <span className="login-footer-divider" />
         <p className="login-footer-block">
-          <span className="login-footer-title">Fazenda Joana</span>
-          <span className="login-footer-sub">Serra Joana</span>
+          <span className="login-footer-title">Fazendas Joana e Cataguá</span>
         </p>
         <span className="login-footer-divider" />
         <p className="login-footer-block">

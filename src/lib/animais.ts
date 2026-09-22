@@ -12,6 +12,7 @@ export type FaseProdutiva = Enums<"fase_produtiva">;
 export type TipoChifre = Enums<"tipo_chifre">;
 export type OrigemAnimal = Enums<"origem_animal">;
 export type MotivoSaida = Enums<"motivo_saida">;
+export type PropriedadeAnimal = Enums<"propriedade_animal">;
 
 export type OrdemAnimais = "brinco" | "idade" | "peso";
 export type DirecaoOrdem = "asc" | "desc";
@@ -39,6 +40,7 @@ export type AnimalListagem = {
   peso_atual: number | null;
   status: StatusAnimal;
   foto_url: string | null;
+  propriedade: PropriedadeAnimal;
   raca: RelacionadoAnimal | null;
   lote: RelacionadoAnimal | null;
   piquete: RelacionadoAnimal | null;
@@ -76,6 +78,7 @@ export type FiltrosAnimais = {
   racaId: string;
   loteId: string;
   piqueteId: string;
+  propriedade: "todas" | PropriedadeAnimal;
   ordem: OrdemAnimais;
   direcao: DirecaoOrdem;
   pagina: number;
@@ -110,6 +113,8 @@ export const FASES_VALIDAS: FaseProdutiva[] = ["cria", "recria", "engorda"];
 
 export const CHIFRES_VALIDOS: TipoChifre[] = ["mocho", "chifrudo", "descornado"];
 
+export const PROPRIEDADES_VALIDAS: PropriedadeAnimal[] = ["joana", "catagua"];
+
 export const MOTIVOS_SAIDA_VALIDOS: MotivoSaida[] = [
   "venda",
   "abate",
@@ -128,6 +133,7 @@ export const FILTROS_PADRAO: FiltrosAnimais = {
   racaId: "",
   loteId: "",
   piqueteId: "",
+  propriedade: "todas",
   ordem: "brinco",
   direcao: "asc",
   pagina: 1,
@@ -173,6 +179,11 @@ export const LABELS_ORIGEM: Record<OrigemAnimal, string> = {
   comprado: "Comprado",
 };
 
+export const LABELS_PROPRIEDADE: Record<PropriedadeAnimal, string> = {
+  joana: "Fazenda Joana",
+  catagua: "Fazenda Cataguá",
+};
+
 export const LABELS_MOTIVO_SAIDA: Record<MotivoSaida, string> = {
   venda: "Venda",
   abate: "Abate",
@@ -201,6 +212,14 @@ export const OPCOES_CATEGORIA: OpcaoFiltro[] = [
   ...CATEGORIAS_VALIDAS.map((valor) => ({
     valor,
     rotulo: LABELS_CATEGORIA[valor],
+  })),
+];
+
+export const OPCOES_PROPRIEDADE: OpcaoFiltro[] = [
+  { valor: "todas", rotulo: "Todas" },
+  ...PROPRIEDADES_VALIDAS.map((valor) => ({
+    valor,
+    rotulo: LABELS_PROPRIEDADE[valor],
   })),
 ];
 
@@ -308,6 +327,7 @@ export function lerFiltrosAnimais(
     racaId: primeiro(searchParams.raca),
     loteId: primeiro(searchParams.lote),
     piqueteId: primeiro(searchParams.piquete),
+    propriedade: incluir(primeiro(searchParams.fazenda), PROPRIEDADES_VALIDAS) ?? "todas",
     ordem: incluir(ordemParam, ORDENS_VALIDAS) ?? "brinco",
     direcao: dirParam === "desc" ? "desc" : "asc",
     pagina: Number.isFinite(paginaBruta) && paginaBruta > 0 ? paginaBruta : 1,
@@ -317,6 +337,7 @@ export function lerFiltrosAnimais(
 export function urlAnimais(
   filtros: FiltrosAnimais,
   patch: Partial<FiltrosAnimais> = {},
+  caminho = "/animais",
 ): string {
   const proximo: FiltrosAnimais = {
     ...filtros,
@@ -358,6 +379,10 @@ export function urlAnimais(
     params.set("piquete", proximo.piqueteId);
   }
 
+  if (proximo.propriedade !== "todas") {
+    params.set("fazenda", proximo.propriedade);
+  }
+
   if (proximo.ordem !== "brinco") {
     params.set("ordem", proximo.ordem);
   }
@@ -371,7 +396,7 @@ export function urlAnimais(
   }
 
   const qs = params.toString();
-  return qs ? `/animais?${qs}` : "/animais";
+  return qs ? `${caminho}?${qs}` : caminho;
 }
 
 export function temFiltrosAtivos(filtros: FiltrosAnimais): boolean {
@@ -382,7 +407,8 @@ export function temFiltrosAtivos(filtros: FiltrosAnimais): boolean {
     filtros.categoria !== "todos" ||
     filtros.racaId !== "" ||
     filtros.loteId !== "" ||
-    filtros.piqueteId !== ""
+    filtros.piqueteId !== "" ||
+    filtros.propriedade !== "todas"
   );
 }
 
@@ -409,6 +435,12 @@ export const OPCOES_MOTIVO_FORM: OpcaoFiltro[] = MOTIVOS_SAIDA_VALIDOS.map(
   (valor) => ({ valor, rotulo: LABELS_MOTIVO_SAIDA[valor] }),
 );
 
+export const OPCOES_PROPRIEDADE_FORM: { valor: PropriedadeAnimal; rotulo: string }[] =
+  PROPRIEDADES_VALIDAS.map((valor) => ({
+    valor,
+    rotulo: LABELS_PROPRIEDADE[valor],
+  }));
+
 export function parseNumeroPt(valor: string | number | null | undefined): number | null {
   if (valor == null || valor === "") {
     return null;
@@ -432,11 +464,14 @@ export function parseNumeroPt(valor: string | number | null | undefined): number
   return Number.isFinite(numero) ? numero : null;
 }
 
+/** Data civil no fuso America/Sao_Paulo (alinhado a public.hoje_fazenda()). */
 export function hojeISO(): string {
-  const agora = new Date();
-  const mes = String(agora.getMonth() + 1).padStart(2, "0");
-  const dia = String(agora.getDate()).padStart(2, "0");
-  return `${agora.getFullYear()}-${mes}-${dia}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
 export function mesesDeIdade(dataNascimento: string): number | null {

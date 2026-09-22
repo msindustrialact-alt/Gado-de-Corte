@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimalForm } from "@/components/animais/animal-form";
 import { buttonVariants } from "@/components/ui/button";
 import { getAnimalPorId, getOpcoesFiltroAnimais } from "@/lib/animais/data";
+import { animalTemHistoricoPesagem } from "@/lib/pesagens/data";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -16,17 +17,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: animal
-      ? `Editar ${animal.brinco} | Fazenda Joana`
-      : "Animal não encontrado | Fazenda Joana",
+      ? `Editar ${animal.brinco} | Fazendas Joana e Cataguá`
+      : "Animal não encontrado | Fazendas Joana e Cataguá",
   };
 }
 
 export default async function PaginaEditarAnimal({ params }: Props) {
   const { id } = await params;
-  const [animal, opcoes] = await Promise.all([
-    getAnimalPorId(id),
-    getOpcoesFiltroAnimais(),
-  ]);
+  const animal = await getAnimalPorId(id);
 
   if (!animal) {
     return (
@@ -53,6 +51,15 @@ export default async function PaginaEditarAnimal({ params }: Props) {
     );
   }
 
+  const [opcoes, temHistoricoPesagem] = await Promise.all([
+    getOpcoesFiltroAnimais({
+      racaId: animal.raca?.id,
+      loteId: animal.lote?.id,
+      piqueteId: animal.piquete?.id,
+    }),
+    animalTemHistoricoPesagem(animal.id),
+  ]);
+
   return (
     <div className="p-4 md:p-6">
       <AnimalForm
@@ -61,6 +68,7 @@ export default async function PaginaEditarAnimal({ params }: Props) {
         racasIniciais={opcoes.racas}
         lotes={opcoes.lotes}
         piquetes={opcoes.piquetes}
+        pesoTravadoPorPesagem={temHistoricoPesagem}
       />
     </div>
   );

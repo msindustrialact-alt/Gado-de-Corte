@@ -38,7 +38,7 @@ export function UltimasOcorrencias({
           Últimas Ocorrências
         </h2>
         <Link
-          href="/relatorios"
+          href="/pesagens"
           className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
         >
           Ver todas
@@ -47,35 +47,46 @@ export function UltimasOcorrencias({
       </header>
 
       <ul className="flex flex-1 flex-col justify-between">
-        {ocorrencias.map((ocorrencia) => {
-          const visual = ICONES[ocorrencia.tipo];
-          const Icone = visual.icone;
+        {ocorrencias.length === 0 ? (
+          <li className="flex flex-1 items-center justify-center text-sm text-texto-suave">
+            As pesagens concluídas aparecem aqui.
+          </li>
+        ) : (
+          ocorrencias.map((ocorrencia) => {
+            const visual = ICONES[ocorrencia.tipo];
+            const Icone = visual.icone;
 
-          return (
-            <li key={ocorrencia.id} className="flex items-center gap-2.5">
-              <span
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full",
-                  visual.fundo,
-                  visual.cor,
-                )}
-              >
-                <Icone className="size-4" strokeWidth={2} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-texto">
-                  {ocorrencia.titulo}
-                </span>
-                <span className="block truncate text-xs text-texto-suave">
-                  {ocorrencia.subtitulo}
-                </span>
-              </span>
-              <span className="shrink-0 text-xs tabular-nums text-texto-suave">
-                {formatarDiaMes(ocorrencia.data)}
-              </span>
-            </li>
-          );
-        })}
+            return (
+              <li key={ocorrencia.id}>
+                <Link
+                  href={ocorrencia.href ?? "/pesagens"}
+                  className="flex items-center gap-2.5 rounded-lg hover:bg-muted/70"
+                >
+                  <span
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-full",
+                      visual.fundo,
+                      visual.cor,
+                    )}
+                  >
+                    <Icone className="size-4" strokeWidth={2} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-texto">
+                      {ocorrencia.titulo}
+                    </span>
+                    <span className="block truncate text-xs text-texto-suave">
+                      {ocorrencia.subtitulo}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs tabular-nums text-texto-suave">
+                    {formatarDiaMes(ocorrencia.data)}
+                  </span>
+                </Link>
+              </li>
+            );
+          })
+        )}
       </ul>
     </CardPainel>
   );

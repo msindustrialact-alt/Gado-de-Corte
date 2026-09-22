@@ -81,14 +81,15 @@ export function BarraLateral({
         )}
       >
         <Image
-          src="/images/logo.png"
-          alt="Fazenda Joana – Serra Joana"
-          width={476}
-          height={170}
+          src={recolhida ? "/images/logo-marca.png" : "/images/logo.png"}
+          alt="Grupo Consociados – Fazendas Joana e Cataguá"
+          width={recolhida ? 1008 : 1619}
+          height={recolhida ? 520 : 971}
           priority
+          quality={100}
           className={cn(
-            "h-auto transition-[width] duration-200",
-            recolhida ? "w-[52px]" : "w-[160px]",
+            "h-auto object-contain transition-[width] duration-200",
+            recolhida ? "w-[56px]" : "w-[176px]",
           )}
         />
       </div>
@@ -254,7 +255,7 @@ function IconeItem({ nome, ativo }: { nome: IconeNav; ativo: boolean }) {
       )}
     >
       {nome === "animais" ? (
-        <IconeBoi className="h-[15px] w-[22px]" />
+        <IconeBoi className="size-5" />
       ) : (
         <IconeLucide nome={nome} ativo={ativo} />
       )}

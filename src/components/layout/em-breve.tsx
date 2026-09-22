@@ -6,7 +6,7 @@ export function EmBreve({ titulo }: { titulo: string }) {
       </p>
       <h1 className="mt-3 text-2xl font-semibold text-texto">{titulo}</h1>
       <p className="mt-2 max-w-md text-center text-sm text-texto-suave">
-        Esta área estará disponível em breve no sistema da Fazenda Joana.
+        Esta área estará disponível em breve no sistema das Fazendas Joana e Cataguá.
       </p>
     </section>
   );

@@ -23,10 +23,7 @@ export function FotoAnimal({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" className="size-full object-cover" />
       ) : (
-        <IconeBoi
-          className="h-[42%] w-[62%]"
-          aria-hidden
-        />
+        <IconeBoi className="size-[55%]" aria-hidden />
       )}
     </span>
   );

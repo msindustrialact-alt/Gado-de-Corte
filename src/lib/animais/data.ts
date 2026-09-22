@@ -23,6 +23,7 @@ const COLUNAS_LISTA = `
   peso_atual,
   status,
   foto_url,
+  propriedade,
   raca:racas ( id, nome ),
   lote:lotes!fk_animais_lote ( id, nome ),
   piquete:piquetes!fk_animais_piquete ( id, nome )
@@ -39,6 +40,7 @@ const COLUNAS_DETALHE = `
   peso_atual,
   status,
   foto_url,
+  propriedade,
   brinco_eletronico,
   sisbov,
   composicao_racial,
@@ -114,6 +116,7 @@ function mapearListagem(linha: {
   peso_atual: number | null;
   status: AnimalListagem["status"];
   foto_url: string | null;
+  propriedade: AnimalListagem["propriedade"];
   raca: RelacionadoBanco;
   lote: RelacionadoBanco;
   piquete: RelacionadoBanco;
@@ -129,13 +132,18 @@ function mapearListagem(linha: {
     peso_atual: linha.peso_atual,
     status: linha.status,
     foto_url: linha.foto_url,
+    propriedade: linha.propriedade,
     raca: um(linha.raca),
     lote: um(linha.lote),
     piquete: um(linha.piquete),
   };
 }
 
-export async function getOpcoesFiltroAnimais(): Promise<OpcoesFiltroAnimais> {
+export async function getOpcoesFiltroAnimais(atuais?: {
+  racaId?: string | null;
+  loteId?: string | null;
+  piqueteId?: string | null;
+}): Promise<OpcoesFiltroAnimais> {
   const fazenda = await getFazendaAtiva();
   const vazio: OpcoesFiltroAnimais = { racas: [], lotes: [], piquetes: [] };
 
@@ -163,21 +171,52 @@ export async function getOpcoesFiltroAnimais(): Promise<OpcoesFiltroAnimais> {
       .from("piquetes")
       .select("id, nome")
       .eq("fazenda_id", fazenda.id)
-      .eq("status", "ativo")
+      .in("status", ["ativo", "em_descanso"])
       .is("deleted_at", null)
       .order("nome", { ascending: true }),
   ]);
 
+  const listaRacas = [...(racas.data ?? [])];
+  const listaLotes = [...(lotes.data ?? [])];
+  const listaPiquetes = [...(piquetes.data ?? [])];
+
+  async function garantir(
+    lista: { id: string; nome: string }[],
+    id: string | null | undefined,
+    tabela: "racas" | "lotes" | "piquetes",
+  ) {
+    if (!id || lista.some((item) => item.id === id)) {
+      return;
+    }
+
+    const { data } = await supabase
+      .from(tabela)
+      .select("id, nome")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (data) {
+      lista.push(data);
+      lista.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+    }
+  }
+
+  await Promise.all([
+    garantir(listaRacas, atuais?.racaId, "racas"),
+    garantir(listaLotes, atuais?.loteId, "lotes"),
+    garantir(listaPiquetes, atuais?.piqueteId, "piquetes"),
+  ]);
+
   return {
-    racas: (racas.data ?? []).map((item) => ({
+    racas: listaRacas.map((item) => ({
       valor: item.id,
       rotulo: item.nome,
     })),
-    lotes: (lotes.data ?? []).map((item) => ({
+    lotes: listaLotes.map((item) => ({
       valor: item.id,
       rotulo: item.nome,
     })),
-    piquetes: (piquetes.data ?? []).map((item) => ({
+    piquetes: listaPiquetes.map((item) => ({
       valor: item.id,
       rotulo: item.nome,
     })),
@@ -226,6 +265,10 @@ export async function getListaAnimais(
 
   if (filtros.piqueteId) {
     consulta = consulta.eq("piquete_id", filtros.piqueteId);
+  }
+
+  if (filtros.propriedade !== "todas") {
+    consulta = consulta.eq("propriedade", filtros.propriedade);
   }
 
   if (busca) {

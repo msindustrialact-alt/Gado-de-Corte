@@ -4,7 +4,7 @@ import { AnimalForm } from "@/components/animais/animal-form";
 import { getOpcoesFiltroAnimais } from "@/lib/animais/data";
 
 export const metadata: Metadata = {
-  title: "Novo animal | Fazenda Joana",
+  title: "Novo animal | Fazendas Joana e Cataguá",
 };
 
 export default async function PaginaNovoAnimal() {

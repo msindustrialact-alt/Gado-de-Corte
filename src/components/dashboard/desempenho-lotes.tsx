@@ -8,7 +8,7 @@ import { formatarDecimal } from "@/lib/formatacao";
 const TONS_VERDE = ["#1D6A3D", "#2E7D4A", "#4C9A66", "#6FB384", "#9FCEA9"];
 
 export function DesempenhoLotes({ lotes }: { lotes: DesempenhoLote[] }) {
-  const maximo = Math.max(...lotes.map((lote) => lote.ganhoKgDia));
+  const maximo = Math.max(0.01, ...lotes.map((lote) => lote.ganhoKgDia));
 
   return (
     <CardPainel className="flex h-auto min-h-[278px] flex-col lg:h-[278px]">
@@ -23,32 +23,39 @@ export function DesempenhoLotes({ lotes }: { lotes: DesempenhoLote[] }) {
         />
       </header>
 
-      <ul className="flex flex-1 flex-col justify-between gap-3">
-        {lotes.map((lote, indice) => {
-          const largura = (lote.ganhoKgDia / maximo) * 100;
+      {lotes.length === 0 ? (
+        <p className="flex flex-1 items-center justify-center text-center text-sm text-texto-suave">
+          Conclua a primeira pesagem para comparar o GMD dos lotes.
+        </p>
+      ) : (
+        <ul className="flex flex-1 flex-col justify-between gap-3">
+          {lotes.map((lote, indice) => {
+            const largura = (lote.ganhoKgDia / maximo) * 100;
 
-          return (
-            <li
-              key={lote.nome}
-              className="grid w-full grid-cols-[130px_minmax(0,1fr)_90px] items-center gap-x-3"
-            >
-              <span className="truncate text-sm text-texto">{lote.nome}</span>
-              <div className="h-3 overflow-hidden rounded-[6px] bg-[#E8F3EC]">
-                <div
-                  className="h-full rounded-[6px]"
-                  style={{
-                    width: `${largura}%`,
-                    backgroundColor: TONS_VERDE[indice] ?? TONS_VERDE[TONS_VERDE.length - 1],
-                  }}
-                />
-              </div>
-              <span className="text-right text-sm tabular-nums text-texto-suave">
-                {formatarDecimal(lote.ganhoKgDia)} kg/dia
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+            return (
+              <li
+                key={lote.nome}
+                className="grid w-full grid-cols-[130px_minmax(0,1fr)_90px] items-center gap-x-3"
+              >
+                <span className="truncate text-sm text-texto">{lote.nome}</span>
+                <div className="h-3 overflow-hidden rounded-[6px] bg-[#E8F3EC]">
+                  <div
+                    className="h-full rounded-[6px]"
+                    style={{
+                      width: `${largura}%`,
+                      backgroundColor:
+                        TONS_VERDE[indice] ?? TONS_VERDE[TONS_VERDE.length - 1],
+                    }}
+                  />
+                </div>
+                <span className="text-right text-sm tabular-nums text-texto-suave">
+                  {formatarDecimal(lote.ganhoKgDia)} kg/dia
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </CardPainel>
   );
 }

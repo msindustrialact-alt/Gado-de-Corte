@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const titulo = tituloDaRota(`/${modulo.join("/")}`) ?? "Em breve";
 
   return {
-    title: `${titulo} | Fazenda Joana`,
+    title: `${titulo} | Fazendas Joana e Cataguá`,
   };
 }
 

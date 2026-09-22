@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fazenda Joana – Serra Joana",
+  title: "Fazendas Joana e Cataguá",
   description: "Sistema de gestão pecuária de gado de corte",
 };
 

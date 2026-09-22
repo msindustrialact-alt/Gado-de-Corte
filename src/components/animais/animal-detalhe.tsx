@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { FotoAnimal } from "@/components/animais/foto-animal";
+import { AnimalDesempenho } from "@/components/pesagens/animal-desempenho";
 import { StatusBadge } from "@/components/animais/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -13,15 +14,23 @@ import {
   LABELS_FASE,
   LABELS_MOTIVO_SAIDA,
   LABELS_ORIGEM,
+  LABELS_PROPRIEDADE,
   LABELS_SEXO,
   textoOuTraco,
   type AnimalDetalhe,
   type ParenteAnimal,
 } from "@/lib/animais";
+import type { DesempenhoAnimal } from "@/lib/pesagens";
 import { formatarData, formatarMoeda } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
 
-export function AnimalDetalhe({ animal }: { animal: AnimalDetalhe }) {
+export function AnimalDetalhe({
+  animal,
+  desempenho,
+}: {
+  animal: AnimalDetalhe;
+  desempenho: DesempenhoAnimal;
+}) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <header className="flex flex-col gap-4 rounded-[12px] border border-border bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
@@ -33,7 +42,7 @@ export function AnimalDetalhe({ animal }: { animal: AnimalDetalhe }) {
               <StatusBadge status={animal.status} />
             </div>
             <p className="mt-0.5 text-sm text-texto-suave">
-              {animal.nome ?? "Sem nome"}
+              {animal.nome ?? "Sem nome"} · {LABELS_PROPRIEDADE[animal.propriedade]}
             </p>
           </div>
         </div>
@@ -123,8 +132,40 @@ export function AnimalDetalhe({ animal }: { animal: AnimalDetalhe }) {
       </Secao>
 
       <Secao titulo="Situação atual">
-        <Campo rotulo="Lote" valor={textoOuTraco(animal.lote?.nome)} />
-        <Campo rotulo="Piquete" valor={textoOuTraco(animal.piquete?.nome)} />
+        <Campo
+          rotulo="Fazenda"
+          valor={LABELS_PROPRIEDADE[animal.propriedade]}
+        />
+        <Campo
+          rotulo="Lote"
+          valor={
+            animal.lote ? (
+              <Link
+                href={`/lotes/${animal.lote.id}`}
+                className="font-medium text-primary hover:underline"
+              >
+                {animal.lote.nome}
+              </Link>
+            ) : (
+              "—"
+            )
+          }
+        />
+        <Campo
+          rotulo="Piquete"
+          valor={
+            animal.piquete ? (
+              <Link
+                href={`/pastagens?piquete=${animal.piquete.id}`}
+                className="font-medium text-primary hover:underline"
+              >
+                {animal.piquete.nome}
+              </Link>
+            ) : (
+              "—"
+            )
+          }
+        />
         <Campo
           rotulo="Fase produtiva"
           valor={
@@ -141,6 +182,8 @@ export function AnimalDetalhe({ animal }: { animal: AnimalDetalhe }) {
           valor={textoOuTraco(animal.escore_corporal)}
         />
       </Secao>
+
+      <AnimalDesempenho desempenho={desempenho} loteId={animal.lote?.id ?? null} />
 
       {animal.status !== "ativo" ? (
         <Secao titulo="Saída">

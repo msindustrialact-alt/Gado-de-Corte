@@ -48,6 +48,7 @@ import {
   OPCOES_CHIFRE_FORM,
   OPCOES_FASE_FORM,
   OPCOES_MOTIVO_FORM,
+  OPCOES_PROPRIEDADE_FORM,
   OPCOES_STATUS_FORM,
   motivoPorStatus,
   rotuloParente,
@@ -115,6 +116,7 @@ function valoresDeAnimal(animal: AnimalDetalhe): AnimalFormInput {
     fase_produtiva: animal.fase_produtiva ?? "",
     lote_id: animal.lote?.id ?? "",
     piquete_id: animal.piquete?.id ?? "",
+    propriedade: animal.propriedade,
     peso_atual: numeroCampo(animal.peso_atual),
     data_ultima_pesagem: dataCampo(animal.data_ultima_pesagem),
     escore_corporal:
@@ -134,12 +136,15 @@ export function AnimalForm({
   racasIniciais,
   lotes,
   piquetes,
+  pesoTravadoPorPesagem = false,
 }: {
   modo: "novo" | "editar";
   animal?: AnimalDetalhe;
   racasIniciais: OpcaoFiltro[];
   lotes: OpcaoFiltro[];
   piquetes: OpcaoFiltro[];
+  /** Quando true, peso_atual/data_ultima_pesagem só vêm do módulo de pesagens. */
+  pesoTravadoPorPesagem?: boolean;
 }) {
   const router = useRouter();
   const brincoRef = useRef<HTMLInputElement | null>(null);
@@ -291,6 +296,7 @@ export function AnimalForm({
         ...VALORES_PADRAO_ANIMAL,
         lote_id: atuais.lote_id,
         piquete_id: atuais.piquete_id,
+        propriedade: atuais.propriedade,
         raca_id: atuais.raca_id,
         origem: atuais.origem,
         fornecedor: atuais.fornecedor,
@@ -576,6 +582,24 @@ export function AnimalForm({
       </Secao>
 
       <Secao icone={MapPinned} titulo="Situação atual">
+        <div className="sm:col-span-2">
+          <Label className="mb-1.5 text-sm text-texto">Fazenda *</Label>
+          <SegmentedControl
+            ariaLabel="Fazenda"
+            valor={watch("propriedade") ?? ""}
+            erro={errors.propriedade?.message}
+            opcoes={OPCOES_PROPRIEDADE_FORM}
+            onChange={(valor) =>
+              setValue("propriedade", valor, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          <p className="mt-1.5 text-xs text-texto-suave">
+            Unidade onde o animal está agora. Use ao levar ou trazer entre Joana e Cataguá.
+          </p>
+        </div>
         <CampoSelect
           id="status"
           rotulo="Status"
@@ -643,6 +667,7 @@ export function AnimalForm({
           sufixo="kg"
           valor={watch("peso_atual")}
           erro={errors.peso_atual?.message}
+          desabilitado={pesoTravadoPorPesagem}
           onChange={(valor) =>
             setValue("peso_atual", valor, { shouldDirty: true })
           }
@@ -658,12 +683,45 @@ export function AnimalForm({
             id="data_ultima_pesagem"
             type="date"
             max={hoje || undefined}
+            disabled={pesoTravadoPorPesagem}
             className={CLASSE_CAMPO}
             {...register("data_ultima_pesagem")}
           />
           {errors.data_ultima_pesagem ? (
             <p className="mt-1 text-sm text-perigo">
               {errors.data_ultima_pesagem.message}
+            </p>
+          ) : null}
+          {pesoTravadoPorPesagem ? (
+            <p className="mt-1.5 text-xs text-texto-suave">
+              Peso controlado pelo módulo de pesagens.{" "}
+              <Link
+                href={`/animais/${animal?.id}`}
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                Ver histórico
+              </Link>
+              {animal?.lote?.id ? (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/pesagens/nova?lote=${animal.lote.id}`}
+                    className="font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    Registrar pesagem
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {" · "}
+                  <Link
+                    href="/pesagens/nova"
+                    className="font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    Registrar pesagem
+                  </Link>
+                </>
+              )}
             </p>
           ) : null}
         </div>

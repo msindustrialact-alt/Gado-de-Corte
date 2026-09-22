@@ -5,10 +5,10 @@ export type IconeKpi = "animais" | "lotes" | "peso" | "ganho" | "custo";
 export type Kpi = {
   id: string;
   rotulo: string;
-  valor: number;
+  valor: number | null;
   sufixoValor?: string;
   moeda?: boolean;
-  variacao: number;
+  variacao: number | null;
   sufixoVariacao: string;
   direcao: "alta" | "baixa";
   icone: IconeKpi;
@@ -37,6 +37,7 @@ export type ProximoManejo = {
   subtitulo: string;
   data: Date;
   tipo: TipoManejo;
+  href?: string;
 };
 
 export type FatiaRebanho = {
@@ -59,6 +60,14 @@ export type Ocorrencia = {
   subtitulo: string;
   data: Date;
   tipo: TipoOcorrencia;
+  href?: string;
+};
+
+export type RebanhoFazenda = {
+  propriedade: "joana" | "catagua";
+  rotulo: string;
+  quantidade: number;
+  percentual: number;
 };
 
 export const MOCK_KPIS: Kpi[] = [

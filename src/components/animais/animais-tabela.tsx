@@ -19,6 +19,7 @@ import {
   formatIdade,
   formatPeso,
   LABELS_CATEGORIA,
+  LABELS_PROPRIEDADE,
   urlAnimais,
   type AnimalListagem,
   type FiltrosAnimais,
@@ -29,9 +30,11 @@ import { cn } from "@/lib/utils";
 export function AnimaisTabela({
   animais,
   filtros,
+  caminho = "/animais",
 }: {
   animais: AnimalListagem[];
   filtros: FiltrosAnimais;
+  caminho?: string;
 }) {
   const router = useRouter();
 
@@ -46,6 +49,7 @@ export function AnimaisTabela({
                 rotulo="Brinco"
                 coluna="brinco"
                 filtros={filtros}
+                caminho={caminho}
               />
             </TableHead>
             <TableHead>Sexo</TableHead>
@@ -56,15 +60,18 @@ export function AnimaisTabela({
                 rotulo="Idade"
                 coluna="idade"
                 filtros={filtros}
+                caminho={caminho}
               />
             </TableHead>
             <TableHead>Lote</TableHead>
             <TableHead>Piquete</TableHead>
+            <TableHead>Fazenda</TableHead>
             <TableHead>
               <CabecalhoOrdenavel
                 rotulo="Peso atual"
                 coluna="peso"
                 filtros={filtros}
+                caminho={caminho}
               />
             </TableHead>
             <TableHead>Status</TableHead>
@@ -118,10 +125,33 @@ export function AnimaisTabela({
                 )}
               </TableCell>
               <TableCell className="text-texto">
-                {animal.lote?.nome ?? "—"}
+                {animal.lote ? (
+                  <Link
+                    href={`/lotes/${animal.lote.id}`}
+                    className="font-medium text-primary hover:underline"
+                    onClick={(evento) => evento.stopPropagation()}
+                  >
+                    {animal.lote.nome}
+                  </Link>
+                ) : (
+                  "—"
+                )}
               </TableCell>
               <TableCell className="text-texto">
-                {animal.piquete?.nome ?? "—"}
+                {animal.piquete ? (
+                  <Link
+                    href={`/pastagens?piquete=${animal.piquete.id}`}
+                    className="font-medium text-primary hover:underline"
+                    onClick={(evento) => evento.stopPropagation()}
+                  >
+                    {animal.piquete.nome}
+                  </Link>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell className="text-texto">
+                {LABELS_PROPRIEDADE[animal.propriedade]}
               </TableCell>
               <TableCell className="tabular-nums text-texto">
                 {formatPeso(animal.peso_atual)}
@@ -144,15 +174,17 @@ function CabecalhoOrdenavel({
   rotulo,
   coluna,
   filtros,
+  caminho,
 }: {
   rotulo: string;
   coluna: OrdemAnimais;
   filtros: FiltrosAnimais;
+  caminho: string;
 }) {
   const ativo = filtros.ordem === coluna;
   const proxima: FiltrosAnimais["direcao"] =
     ativo && filtros.direcao === "asc" ? "desc" : "asc";
-  const href = urlAnimais(filtros, { ordem: coluna, direcao: proxima });
+  const href = urlAnimais(filtros, { ordem: coluna, direcao: proxima }, caminho);
   const Icone = !ativo
     ? ArrowUpDown
     : filtros.direcao === "asc"

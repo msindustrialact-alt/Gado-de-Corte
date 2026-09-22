@@ -20,17 +20,23 @@ export function KpisDashboard({ kpis }: { kpis: Kpi[] }) {
             <p className="truncate text-[20px] leading-tight font-bold text-texto 2xl:text-[30px]">
               {formatarValor(kpi)}
             </p>
-            <p className="mt-1 flex items-center gap-1 truncate text-[11px] 2xl:text-[12px]">
-              {kpi.direcao === "alta" ? (
-                <ArrowUp className="size-3.5 text-positivo" aria-hidden />
-              ) : (
-                <ArrowDown className="size-3.5 text-positivo" aria-hidden />
-              )}
-              <span className="font-bold text-positivo">
-                {`${formatarInteiro(kpi.variacao)}${kpi.sufixoVariacao}`}
-              </span>
-              <span className="truncate text-texto-suave">vs. mês anterior</span>
-            </p>
+            {kpi.variacao != null ? (
+              <p className="mt-1 flex items-center gap-1 truncate text-[11px] 2xl:text-[12px]">
+                {kpi.direcao === "alta" ? (
+                  <ArrowUp className="size-3.5 text-positivo" aria-hidden />
+                ) : (
+                  <ArrowDown className="size-3.5 text-positivo" aria-hidden />
+                )}
+                <span className="font-bold text-positivo">
+                  {`${formatarInteiro(kpi.variacao)}${kpi.sufixoVariacao}`}
+                </span>
+                <span className="truncate text-texto-suave">vs. mês anterior</span>
+              </p>
+            ) : (
+              <p className="mt-1 truncate text-[11px] text-texto-suave 2xl:text-[12px]">
+                Rebanho atual
+              </p>
+            )}
           </div>
         </article>
       ))}
@@ -39,6 +45,10 @@ export function KpisDashboard({ kpis }: { kpis: Kpi[] }) {
 }
 
 function formatarValor(kpi: Kpi) {
+  if (kpi.valor == null) {
+    return "—";
+  }
+
   if (kpi.moeda) {
     return formatarMoeda(kpi.valor);
   }
@@ -54,10 +64,7 @@ function IconeDoKpi({ nome }: { nome: IconeKpi }) {
 
   if (nome === "animais") {
     return (
-      <IconeBoi
-        className="h-[30px] w-[45px] text-[#1D6A3D] [&_path]:[vector-effect:non-scaling-stroke] [&_circle]:[vector-effect:non-scaling-stroke]"
-        strokeWidth={2.25}
-      />
+      <IconeBoi className="size-[30px] text-[#1D6A3D]" strokeWidth={2.25} />
     );
   }
 

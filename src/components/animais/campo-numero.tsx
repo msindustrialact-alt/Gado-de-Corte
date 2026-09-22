@@ -10,6 +10,7 @@ export function CampoNumero({
   erro,
   sufixo,
   placeholder,
+  desabilitado,
 }: {
   id: string;
   rotulo: string;
@@ -18,6 +19,7 @@ export function CampoNumero({
   erro?: string;
   sufixo?: string;
   placeholder?: string;
+  desabilitado?: boolean;
 }) {
   return (
     <div className="min-w-0">
@@ -30,6 +32,7 @@ export function CampoNumero({
           inputMode="decimal"
           autoComplete="off"
           placeholder={placeholder}
+          disabled={desabilitado}
           aria-invalid={erro ? true : undefined}
           value={valor}
           onChange={(evento) => onChange(evento.target.value)}

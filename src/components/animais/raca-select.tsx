@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { criarRaca } from "@/app/(app)/animais/actions";
+import { criarRaca } from "@/app/(app)/cadastros/racas/actions";
 import { CLASSE_CAMPO } from "@/components/animais/segmented-control";
 import { Button } from "@/components/ui/button";
 import {
