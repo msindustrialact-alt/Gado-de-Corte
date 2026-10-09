@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { lerFiltrosAnimais } from "@/lib/animais";
 import { getListaAnimais } from "@/lib/animais/data";
 import { getLotePorId } from "@/lib/lotes/data";
+import { getBaseLucratividadeLote } from "@/lib/lucratividade/data";
 import { getResumoLotePesagem } from "@/lib/pesagens/data";
 import { cn } from "@/lib/utils";
 
@@ -58,8 +59,12 @@ export default async function PaginaLote({ params, searchParams }: Props) {
     loteId: id,
     status: "ativo" as const,
   };
-  const { animais, totalFiltrado, de, ate } = await getListaAnimais(filtros);
-  const resumoPesagem = await getResumoLotePesagem(id);
+  const [{ animais, totalFiltrado, de, ate }, resumoPesagem, lucratividade] =
+    await Promise.all([
+      getListaAnimais(filtros),
+      getResumoLotePesagem(id),
+      getBaseLucratividadeLote(id),
+    ]);
 
   return (
     <LoteDetalheTela
@@ -70,6 +75,7 @@ export default async function PaginaLote({ params, searchParams }: Props) {
       de={de}
       ate={ate}
       resumoPesagem={resumoPesagem}
+      lucratividade={lucratividade}
     />
   );
 }

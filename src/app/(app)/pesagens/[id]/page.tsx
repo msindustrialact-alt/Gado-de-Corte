@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PesagemSessaoTela } from "@/components/pesagens/pesagem-sessao-tela";
 import { buttonVariants } from "@/components/ui/button";
+import { getBaseLucratividadeLote } from "@/lib/lucratividade/data";
 import { getSessaoPesagem } from "@/lib/pesagens/data";
 import { cn } from "@/lib/utils";
 
@@ -47,5 +48,7 @@ export default async function PaginaSessaoPesagem({ params }: Props) {
     );
   }
 
-  return <PesagemSessaoTela sessao={sessao} />;
+  const lucratividade = await getBaseLucratividadeLote(sessao.cabecalho.lote_id);
+
+  return <PesagemSessaoTela sessao={sessao} lucratividade={lucratividade} />;
 }

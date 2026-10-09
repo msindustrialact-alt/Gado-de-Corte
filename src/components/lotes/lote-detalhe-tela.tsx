@@ -11,6 +11,7 @@ import { AnimalCard } from "@/components/animais/animal-card";
 import { LoteFormulario } from "@/components/lotes/lote-formulario";
 import { ObjetivoBadge, StatusLoteBadge } from "@/components/lotes/lote-badges";
 import { CardResumo } from "@/components/layout/card-resumo";
+import { LucratividadeProjecaoPainel } from "@/components/lucratividade/lucratividade-projecao-painel";
 import { EstadoVazio } from "@/components/layout/estado-vazio";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DialogOuSheet } from "@/components/ui/dialog-ou-sheet";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/animais";
 import { formatarData, formatarInteiro } from "@/lib/formatacao";
 import type { LoteDetalhe } from "@/lib/lotes";
+import type { LoteLucratividadeBase } from "@/lib/lucratividade";
 import { formatGmd, type ResumoLotePesagem } from "@/lib/pesagens";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +35,7 @@ export function LoteDetalheTela({
   de,
   ate,
   resumoPesagem,
+  lucratividade,
 }: {
   lote: LoteDetalhe;
   animais: AnimalListagem[];
@@ -41,6 +44,7 @@ export function LoteDetalheTela({
   de: number;
   ate: number;
   resumoPesagem: ResumoLotePesagem;
+  lucratividade: LoteLucratividadeBase | null;
 }) {
   const router = useRouter();
   const [aberto, setAberto] = useState(false);
@@ -147,6 +151,10 @@ export function LoteDetalheTela({
           />
         </>
       )}
+
+      {lucratividade ? (
+        <LucratividadeProjecaoPainel base={lucratividade} />
+      ) : null}
 
       <DialogOuSheet
         aberto={aberto}

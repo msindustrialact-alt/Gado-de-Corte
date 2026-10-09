@@ -191,10 +191,21 @@ export const OPCOES_CONDICAO_PESAGEM: {
 
 /**
  * Arrobas estimadas a partir do peso vivo.
- * = peso_vivo * RENDIMENTO_CARCACA_PADRAO / 15
+ * = peso_vivo * rendimento / 15
+ * @param rendimentoFracao fração 0–1 (padrão 50% = 0.5). Valores fora de (0, 1] usam o padrão.
  */
-export function kgParaArroba(kg: number): number {
-  return (kg * RENDIMENTO_CARCACA_PADRAO) / KG_POR_ARROBA_CARCACA;
+export function kgParaArroba(
+  kg: number,
+  rendimentoFracao: number = RENDIMENTO_CARCACA_PADRAO,
+): number {
+  const rendimento =
+    Number.isFinite(rendimentoFracao) &&
+    rendimentoFracao > 0 &&
+    rendimentoFracao <= 1
+      ? rendimentoFracao
+      : RENDIMENTO_CARCACA_PADRAO;
+
+  return (kg * rendimento) / KG_POR_ARROBA_CARCACA;
 }
 
 export const kgParaArrobaEstimada = kgParaArroba;

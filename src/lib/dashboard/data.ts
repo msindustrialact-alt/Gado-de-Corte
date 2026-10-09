@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 
+import { mesesDeIdade } from "@/lib/animais";
 import {
-  MOCK_DISTRIBUICAO_REBANHO,
   type DesempenhoLote,
   type FatiaRebanho,
   type Kpi,
@@ -24,6 +24,16 @@ export type {
   ProximoManejo,
   RebanhoFazenda,
 };
+
+const CORES_DISTRIBUICAO = {
+  macho_0_12: "#146C3B",
+  macho_12_24: "#3DB37E",
+  macho_24: "#7E8A6E",
+  femea_0_12: "#8C8F86",
+  femea_12_24: "#F4A26B",
+  femea_24: "#E8735F",
+  sem_idade: "#B0B0B0",
+} as const;
 
 export async function getKpis(): Promise<Kpi[]> {
   const fazenda = await getFazendaAtiva();
@@ -216,7 +226,121 @@ export async function getProximosManejos(): Promise<ProximoManejo[]> {
 }
 
 export async function getDistribuicaoRebanho(): Promise<FatiaRebanho[]> {
-  return MOCK_DISTRIBUICAO_REBANHO;
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("animais")
+    .select("sexo, data_nascimento")
+    .eq("fazenda_id", fazenda.id)
+    .eq("status", "ativo")
+    .is("deleted_at", null);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  const contagem = {
+    macho_0_12: 0,
+    macho_12_24: 0,
+    macho_24: 0,
+    femea_0_12: 0,
+    femea_12_24: 0,
+    femea_24: 0,
+    sem_idade: 0,
+  };
+
+  for (const animal of data ?? []) {
+    const meses =
+      animal.data_nascimento != null
+        ? mesesDeIdade(animal.data_nascimento)
+        : null;
+
+    if (meses == null) {
+      contagem.sem_idade += 1;
+      continue;
+    }
+
+    if (animal.sexo === "macho") {
+      if (meses < 12) contagem.macho_0_12 += 1;
+      else if (meses < 24) contagem.macho_12_24 += 1;
+      else contagem.macho_24 += 1;
+    } else if (animal.sexo === "femea") {
+      if (meses < 12) contagem.femea_0_12 += 1;
+      else if (meses < 24) contagem.femea_12_24 += 1;
+      else contagem.femea_24 += 1;
+    } else {
+      contagem.sem_idade += 1;
+    }
+  }
+
+  const total = Object.values(contagem).reduce((soma, n) => soma + n, 0);
+
+  if (total === 0) {
+    return [];
+  }
+
+  const fatiasBase: {
+    chave: keyof typeof contagem;
+    rotulo: string;
+    cor: string;
+  }[] = [
+    {
+      chave: "macho_0_12",
+      rotulo: "Machos (0–12 meses)",
+      cor: CORES_DISTRIBUICAO.macho_0_12,
+    },
+    {
+      chave: "macho_12_24",
+      rotulo: "Machos (12–24 meses)",
+      cor: CORES_DISTRIBUICAO.macho_12_24,
+    },
+    {
+      chave: "macho_24",
+      rotulo: "Machos (>24 meses)",
+      cor: CORES_DISTRIBUICAO.macho_24,
+    },
+    {
+      chave: "femea_0_12",
+      rotulo: "Fêmeas (0–12 meses)",
+      cor: CORES_DISTRIBUICAO.femea_0_12,
+    },
+    {
+      chave: "femea_12_24",
+      rotulo: "Fêmeas (12–24 meses)",
+      cor: CORES_DISTRIBUICAO.femea_12_24,
+    },
+    {
+      chave: "femea_24",
+      rotulo: "Fêmeas (>24 meses)",
+      cor: CORES_DISTRIBUICAO.femea_24,
+    },
+  ];
+
+  const fatias: FatiaRebanho[] = fatiasBase
+    .filter((item) => contagem[item.chave] > 0)
+    .map((item) => ({
+      rotulo: item.rotulo,
+      quantidade: contagem[item.chave],
+      percentual: Math.round((contagem[item.chave] / total) * 100),
+      cor: item.cor,
+    }));
+
+  if (contagem.sem_idade > 0) {
+    fatias.push({
+      rotulo: "Sem data de nascimento",
+      quantidade: contagem.sem_idade,
+      percentual: Math.round((contagem.sem_idade / total) * 100),
+      cor: CORES_DISTRIBUICAO.sem_idade,
+    });
+  }
+
+  return fatias;
 }
 
 export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {

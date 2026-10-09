@@ -25,10 +25,12 @@ import {
 import { CampoMoeda } from "@/components/animais/campo-moeda";
 import { CLASSE_CAMPO } from "@/components/animais/segmented-control";
 import { CardResumo } from "@/components/layout/card-resumo";
+import { LucratividadeProjecaoPainel } from "@/components/lucratividade/lucratividade-projecao-painel";
 import { ObjetivoBadge } from "@/components/lotes/lote-badges";
 import { PesagemAnimalLinha } from "@/components/pesagens/pesagem-animal-linha";
 import { StatusPesagemBadge } from "@/components/pesagens/pesagem-badges";
 import { Button, buttonVariants } from "@/components/ui/button";
+import type { LoteLucratividadeBase } from "@/lib/lucratividade";
 import {
   Dialog,
   DialogContent,
@@ -69,7 +71,13 @@ const FILTROS: { valor: FiltroListaSessao; rotulo: string }[] = [
   { valor: "atencao", rotulo: "Atenção" },
 ];
 
-export function PesagemSessaoTela({ sessao }: { sessao: PesagemSessao }) {
+export function PesagemSessaoTela({
+  sessao,
+  lucratividade,
+}: {
+  sessao: PesagemSessao;
+  lucratividade: LoteLucratividadeBase | null;
+}) {
   const router = useRouter();
   const { cabecalho, animais } = sessao;
   const somenteLeitura = cabecalho.status === "concluida";
@@ -519,6 +527,13 @@ export function PesagemSessaoTela({ sessao }: { sessao: PesagemSessao }) {
           />
         </div>
       </section>
+
+      {lucratividade ? (
+        <LucratividadeProjecaoPainel
+          base={lucratividade}
+          className="mb-20 md:mb-0"
+        />
+      ) : null}
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden">
         {somenteLeitura ? (

@@ -141,7 +141,7 @@ export async function getPesagemPorLoteData(
 
 type PesoAnterior = {
   peso_kg: number;
-  data: string;
+  data: string | null;
   origem: OrigemPesoAnterior;
   condicao: CondicaoPesagem | null;
 };
@@ -182,17 +182,22 @@ function escolherAnterior(params: {
     };
   }
 
-  if (
-    params.dataUltimaPesagem &&
-    params.dataUltimaPesagem < params.dataSessao &&
-    params.pesoAtual != null
-  ) {
-    return {
-      peso_kg: params.pesoAtual,
-      data: params.dataUltimaPesagem,
-      origem: "cadastro",
-      condicao: null,
-    };
+  // Cadastro: usa peso_atual mesmo sem data_ultima_pesagem.
+  // Sem data o GMD não calcula (faltam dias), mas ganho e @ ainda fazem sentido.
+  if (params.pesoAtual != null) {
+    const dataCadastro =
+      params.dataUltimaPesagem && params.dataUltimaPesagem < params.dataSessao
+        ? params.dataUltimaPesagem
+        : null;
+
+    if (!params.dataUltimaPesagem || dataCadastro) {
+      return {
+        peso_kg: params.pesoAtual,
+        data: dataCadastro,
+        origem: "cadastro",
+        condicao: null,
+      };
+    }
   }
 
   if (params.pesoEntrada != null && params.dataEntrada && params.dataEntrada < params.dataSessao) {
@@ -208,6 +213,16 @@ function escolherAnterior(params: {
     return {
       peso_kg: params.pesoEntrada,
       data: params.dataEntrada,
+      origem: "entrada",
+      condicao: null,
+    };
+  }
+
+  // Entrada sem data cadastrada — ainda serve como referência de peso.
+  if (params.pesoEntrada != null && !params.dataEntrada) {
+    return {
+      peso_kg: params.pesoEntrada,
+      data: null,
       origem: "entrada",
       condicao: null,
     };
