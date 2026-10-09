@@ -6,8 +6,13 @@ import { LoginForm } from "@/components/login/login-form";
 import "./login.css";
 
 export const metadata: Metadata = {
-  title: "Entrar | Fazendas Joana e Cataguá",
+  title: "Entrar",
   description: "Acesse o sistema de gestão pecuária das Fazendas Joana e Cataguá.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Gado Corte",
+  },
 };
 
 function EscudoCadeado() {
@@ -47,44 +52,44 @@ function EscudoCadeado() {
 export default function LoginPage() {
   return (
     <main className="login-page">
-      <div className="login-stage">
+      <div className="login-stage" aria-hidden>
         <Image
           src="/images/login-bg-v3.jpg"
           alt=""
           fill
           priority
-          quality={100}
+          quality={85}
           sizes="100vw"
           className="login-bg"
         />
-
-        <div className="login-panel">
-          <Image
-            src="/images/logo.png"
-            alt="Grupo Consociados – Fazendas Joana e Cataguá"
-            width={1619}
-            height={971}
-            priority
-            quality={100}
-            className="login-logo"
-          />
-
-          <section className="login-card">
-            <LoginForm />
-          </section>
-        </div>
-
-        <p className="login-mid-right">
-          Pecuária
-          <br />
-          com gestão
-          <br />
-          gera grandes
-          <br />
-          resultados
-          <span className="login-mid-right-rule" />
-        </p>
       </div>
+
+      <div className="login-panel">
+        <Image
+          src="/images/logo.png"
+          alt="Grupo Consociados – Fazendas Joana e Cataguá"
+          width={1619}
+          height={971}
+          priority
+          quality={90}
+          className="login-logo"
+        />
+
+        <section className="login-card">
+          <LoginForm />
+        </section>
+      </div>
+
+      <p className="login-mid-right">
+        Pecuária
+        <br />
+        com gestão
+        <br />
+        gera grandes
+        <br />
+        resultados
+        <span className="login-mid-right-rule" />
+      </p>
 
       <div className="login-top-right">
         <p className="login-top-kicker">Sistema de gestão pecuária</p>

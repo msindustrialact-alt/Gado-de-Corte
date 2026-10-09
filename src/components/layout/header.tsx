@@ -18,7 +18,7 @@ export function Cabecalho({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-3 md:gap-4 md:px-5">
+    <header className="sticky top-0 z-20 flex min-h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-3 pt-[env(safe-area-inset-top)] md:gap-4 md:px-5">
       <Button
         type="button"
         variant="ghost"

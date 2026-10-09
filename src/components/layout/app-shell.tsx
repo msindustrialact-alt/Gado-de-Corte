@@ -59,10 +59,10 @@ export function AppShell({
 
   return (
     <TooltipProvider delay={0}>
-      <div className="flex min-h-svh bg-app">
+      <div className="flex min-h-dvh bg-app pb-[env(safe-area-inset-bottom)]">
         <aside
           className={cn(
-            "sticky top-0 hidden h-svh shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar transition-[width] duration-200 ease-out lg:flex",
+            "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar pt-[env(safe-area-inset-top)] transition-[width] duration-200 ease-out lg:flex",
             recolhida ? "w-[72px]" : "w-[224px]",
           )}
         >
@@ -76,7 +76,7 @@ export function AppShell({
           <SheetContent
             side="left"
             showCloseButton={false}
-            className="gap-0 p-0 data-[side=left]:w-[224px] data-[side=left]:sm:max-w-[224px]"
+            className="gap-0 p-0 pt-[env(safe-area-inset-top)] data-[side=left]:w-[min(224px,85vw)] data-[side=left]:sm:max-w-[224px]"
           >
             <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
             <SheetDescription className="sr-only">
@@ -91,7 +91,7 @@ export function AppShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Cabecalho usuario={usuario} onMenu={aoClicarMenu} />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 overflow-x-hidden">{children}</main>
         </div>
       </div>
     </TooltipProvider>
