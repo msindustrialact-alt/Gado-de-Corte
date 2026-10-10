@@ -272,9 +272,29 @@ export async function getListaAnimais(
   }
 
   if (busca) {
-    consulta = consulta.or(
-      `brinco.ilike.%${busca}%,nome.ilike.%${busca}%,brinco_eletronico.ilike.%${busca}%,sisbov.ilike.%${busca}%`,
-    );
+    const { data: lotesEncontrados } = await supabase
+      .from("lotes")
+      .select("id")
+      .eq("fazenda_id", fazenda.id)
+      .is("deleted_at", null)
+      .ilike("nome", `%${busca}%`);
+
+    const idsLote = (lotesEncontrados ?? [])
+      .map((lote) => lote.id)
+      .filter(Boolean);
+
+    const partes = [
+      `brinco.ilike.%${busca}%`,
+      `nome.ilike.%${busca}%`,
+      `brinco_eletronico.ilike.%${busca}%`,
+      `sisbov.ilike.%${busca}%`,
+    ];
+
+    if (idsLote.length > 0) {
+      partes.push(`lote_id.in.(${idsLote.join(",")})`);
+    }
+
+    consulta = consulta.or(partes.join(","));
   }
 
   const [{ data, error, count }, cadastrados] = await Promise.all([

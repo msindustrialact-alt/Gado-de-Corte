@@ -23,59 +23,62 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Ações rápidas"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/92 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl lg:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div className="mx-auto grid h-[64px] max-w-lg grid-cols-3 px-2">
-        {ITENS.map((item) => {
-          const ativo = rotaEstaAtiva(item.href, pathname);
-          const Icone = item.icone;
+      <div
+        className={cn(
+          "pointer-events-auto relative mx-auto max-w-md overflow-hidden rounded-[28px]",
+          "border border-white/55 bg-white/45 shadow-[0_10px_40px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.75)]",
+          "backdrop-blur-2xl backdrop-saturate-150",
+          "before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/90 before:to-transparent",
+          "after:pointer-events-none after:absolute after:inset-0 after:rounded-[28px] after:bg-gradient-to-b after:from-white/35 after:via-transparent after:to-black/[0.03]",
+        )}
+      >
+        <div className="relative z-10 grid h-[64px] grid-cols-3 gap-1 px-2 py-1.5">
+          {ITENS.map((item) => {
+            const ativo = rotaEstaAtiva(item.href, pathname);
+            const Icone = item.icone;
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={ativo ? "page" : undefined}
-              className={cn(
-                "group relative flex flex-col items-center justify-center gap-1 rounded-xl transition-colors",
-                ativo ? "text-primary" : "text-texto-suave active:text-texto",
-              )}
-            >
-              <span
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={ativo ? "page" : undefined}
                 className={cn(
-                  "flex size-9 items-center justify-center rounded-full transition-all duration-200",
-                  ativo
-                    ? "bg-primary/12 shadow-[inset_0_0_0_1px_rgba(29,106,61,0.12)]"
-                    : "bg-transparent group-active:bg-muted/70",
+                  "relative flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all duration-300 ease-out",
+                  ativo ? "text-primary" : "text-texto-suave/90 active:scale-95 active:text-texto",
                 )}
               >
+                <span
+                  className={cn(
+                    "absolute inset-x-1 inset-y-1 -z-10 rounded-2xl transition-all duration-300 ease-out",
+                    ativo
+                      ? "bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_14px_rgba(29,106,61,0.12)] ring-1 ring-white/60"
+                      : "bg-transparent",
+                  )}
+                  aria-hidden
+                />
                 <Icone
                   className={cn(
-                    "size-[22px] transition-transform duration-200",
-                    ativo && "scale-105",
+                    "size-[22px] transition-transform duration-300",
+                    ativo && "scale-105 drop-shadow-sm",
                   )}
-                  strokeWidth={ativo ? 2.4 : 2}
+                  strokeWidth={ativo ? 2.45 : 2}
                   aria-hidden
                 />
-              </span>
-              <span
-                className={cn(
-                  "text-[11px] leading-none tracking-wide",
-                  ativo ? "font-semibold" : "font-medium",
-                )}
-              >
-                {item.titulo}
-              </span>
-              {ativo ? (
                 <span
-                  className="absolute top-1.5 h-1 w-1 rounded-full bg-primary"
-                  aria-hidden
-                />
-              ) : null}
-            </Link>
-          );
-        })}
+                  className={cn(
+                    "text-[10px] leading-none tracking-wide transition-opacity duration-300",
+                    ativo ? "font-semibold opacity-100" : "font-medium opacity-80",
+                  )}
+                >
+                  {item.titulo}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-      <div className="h-[env(safe-area-inset-bottom)]" aria-hidden />
     </nav>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { Bell, Menu, Search } from "lucide-react";
 
+import { BuscaCabecalho } from "@/components/layout/busca-cabecalho";
 import type { DadosUsuario } from "@/components/layout/types";
 import { MenuUsuario } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,6 @@ export function Cabecalho({
   usuario: DadosUsuario;
   onMenu: () => void;
 }) {
-  const router = useRouter();
-
   return (
     <header className="sticky top-0 z-20 flex min-h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-3 pt-[env(safe-area-inset-top)] md:gap-4 md:px-5">
       <Button
@@ -30,32 +29,9 @@ export function Cabecalho({
         <Menu className="size-5" />
       </Button>
 
-      <form
-        className="relative min-w-0 flex-1 max-w-[470px]"
-        onSubmit={(evento) => {
-          evento.preventDefault();
-          const dados = new FormData(evento.currentTarget);
-          const q = String(dados.get("q") ?? "").trim();
-          router.push(
-            q ? `/animais?q=${encodeURIComponent(q)}` : "/animais",
-          );
-        }}
-      >
-        <label className="block">
-          <span className="sr-only">Buscar</span>
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-texto-suave"
-          />
-          <Input
-            type="search"
-            name="q"
-            autoComplete="off"
-            placeholder="Buscar animal, lote, brinco, pesagem..."
-            className="h-[42px] rounded-[10px] border border-[#E4E9E6] bg-[#F1F4F2] pr-4 pl-10 text-sm shadow-none placeholder:text-texto-suave focus-visible:border-[#E4E9E6] focus-visible:ring-0"
-          />
-        </label>
-      </form>
+      <Suspense fallback={<BuscaCabecalhoFallback />}>
+        <BuscaCabecalho />
+      </Suspense>
 
       <div className="ml-auto flex shrink-0 items-center gap-2 md:gap-3">
         <Button
@@ -74,5 +50,21 @@ export function Cabecalho({
         <MenuUsuario usuario={usuario} />
       </div>
     </header>
+  );
+}
+
+function BuscaCabecalhoFallback() {
+  return (
+    <div className="relative min-w-0 flex-1 max-w-[470px]">
+      <Input
+        type="search"
+        disabled
+        placeholder="Buscar animal, lote, brinco..."
+        className="h-[42px] rounded-[10px] border border-[#E4E9E6] bg-[#F1F4F2] pr-12 pl-3.5 text-sm shadow-none placeholder:text-texto-suave"
+      />
+      <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-texto-suave">
+        <Search className="size-4" aria-hidden />
+      </span>
+    </div>
   );
 }

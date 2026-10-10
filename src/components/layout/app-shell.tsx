@@ -92,7 +92,7 @@ export function AppShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Cabecalho usuario={usuario} onMenu={aoClicarMenu} />
-          <main className="flex-1 overflow-x-hidden pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0">
+          <main className="flex-1 overflow-x-hidden pb-[calc(88px+env(safe-area-inset-bottom))] lg:pb-0">
             {children}
           </main>
         </div>
