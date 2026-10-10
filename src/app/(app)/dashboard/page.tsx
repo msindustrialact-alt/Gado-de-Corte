@@ -42,6 +42,10 @@ export default async function PaginaDashboard() {
       <div className="space-y-3 p-4">
         <KpisDashboard kpis={kpis} />
 
+        <div className="lg:hidden">
+          <DistribuicaoRebanho fatias={rebanho} />
+        </div>
+
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
           <EvolucaoPeso dados={evolucao} />
           <DesempenhoLotes lotes={lotes} />
@@ -49,7 +53,9 @@ export default async function PaginaDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
-          <DistribuicaoRebanho fatias={rebanho} />
+          <div className="hidden lg:block">
+            <DistribuicaoRebanho fatias={rebanho} />
+          </div>
           <UltimasOcorrencias ocorrencias={ocorrencias} />
           <RebanhoPorFazenda itens={rebanhoFazenda} />
         </div>

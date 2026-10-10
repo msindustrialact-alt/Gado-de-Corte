@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { Cabecalho } from "@/components/layout/header";
 import { BarraLateral } from "@/components/layout/sidebar";
 import {
@@ -59,7 +60,7 @@ export function AppShell({
 
   return (
     <TooltipProvider delay={0}>
-      <div className="flex min-h-dvh bg-app pb-[env(safe-area-inset-bottom)]">
+      <div className="flex min-h-dvh bg-app">
         <aside
           className={cn(
             "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar pt-[env(safe-area-inset-top)] transition-[width] duration-200 ease-out lg:flex",
@@ -91,8 +92,12 @@ export function AppShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Cabecalho usuario={usuario} onMenu={aoClicarMenu} />
-          <main className="flex-1 overflow-x-hidden">{children}</main>
+          <main className="flex-1 overflow-x-hidden pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0">
+            {children}
+          </main>
         </div>
+
+        <BottomNav />
       </div>
     </TooltipProvider>
   );
