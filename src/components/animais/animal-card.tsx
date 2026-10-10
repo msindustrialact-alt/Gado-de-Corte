@@ -10,86 +10,88 @@ import {
   type AnimalListagem,
 } from "@/lib/animais";
 
-export function AnimalCard({ animal }: { animal: AnimalListagem }) {
+export function AnimalCard({
+  animal,
+  ocultarLote = false,
+}: {
+  animal: AnimalListagem;
+  /** Em detalhe de lote, o nome do lote é redundante. */
+  ocultarLote?: boolean;
+}) {
+  const categoria = animal.categoria
+    ? LABELS_CATEGORIA[animal.categoria]
+    : "—";
+
   return (
-    <article className="relative rounded-[12px] border border-border bg-card p-4 shadow-card">
-      <Link href={`/animais/${animal.id}`} className="flex items-start gap-3 pr-8">
-        <FotoAnimal url={animal.foto_url} tamanho={48} />
+    <article className="relative rounded-[10px] border border-border bg-card px-2.5 py-2 shadow-card">
+      <Link
+        href={`/animais/${animal.id}`}
+        className="flex items-center gap-2.5 pr-8"
+      >
+        <FotoAnimal url={animal.foto_url} tamanho={36} />
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate text-base font-bold text-texto">
-                {animal.brinco}
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-sm font-bold text-texto">
+              {animal.brinco}
+            </p>
+            {animal.nome ? (
+              <p className="min-w-0 truncate text-xs text-texto-suave">
+                {animal.nome}
               </p>
-              {animal.nome ? (
-                <p className="truncate text-sm text-texto-suave">{animal.nome}</p>
-              ) : null}
-            </div>
-            <StatusBadge status={animal.status} />
+            ) : null}
+            <span className="ml-auto shrink-0 origin-right scale-90">
+              <StatusBadge status={animal.status} />
+            </span>
           </div>
-          <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-            <div>
-              <dt className="text-xs text-texto-suave">Categoria</dt>
-              <dd className="text-texto">
-                {animal.categoria
-                  ? LABELS_CATEGORIA[animal.categoria]
-                  : "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-texto-suave">Sexo</dt>
-              <dd>
-                <SexoBadge sexo={animal.sexo} />
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-texto-suave">Fazenda</dt>
-              <dd className="truncate text-texto">
-                {LABELS_PROPRIEDADE[animal.propriedade]}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-texto-suave">Peso</dt>
-              <dd className="tabular-nums text-texto">
-                {formatPeso(animal.peso_atual)}
-              </dd>
-            </div>
-          </dl>
+
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-texto">
+            <span className="truncate text-texto-suave">{categoria}</span>
+            <span className="text-border" aria-hidden>
+              ·
+            </span>
+            <SexoBadge sexo={animal.sexo} />
+            <span className="text-border" aria-hidden>
+              ·
+            </span>
+            <span className="tabular-nums font-medium">
+              {formatPeso(animal.peso_atual)}
+            </span>
+            <span className="text-border" aria-hidden>
+              ·
+            </span>
+            <span className="truncate text-texto-suave">
+              {LABELS_PROPRIEDADE[animal.propriedade]}
+            </span>
+          </div>
         </div>
       </Link>
-      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 border-t border-border pt-3 text-sm">
-        <div>
-          <dt className="text-xs text-texto-suave">Lote</dt>
-          <dd className="truncate text-texto">
-            {animal.lote ? (
-              <Link
-                href={`/lotes/${animal.lote.id}`}
-                className="font-medium text-primary hover:underline"
-              >
-                {animal.lote.nome}
-              </Link>
-            ) : (
-              "—"
-            )}
-          </dd>
+
+      {ocultarLote && !animal.piquete ? null : (
+        <div className="mt-1.5 flex items-center gap-3 border-t border-border/70 pt-1.5 pl-[46px] text-[11px]">
+          {ocultarLote ? null : animal.lote ? (
+            <Link
+              href={`/lotes/${animal.lote.id}`}
+              className="truncate font-medium text-primary hover:underline"
+            >
+              {animal.lote.nome}
+            </Link>
+          ) : (
+            <span className="text-texto-suave">Sem lote</span>
+          )}
+          {animal.piquete ? (
+            <Link
+              href={`/pastagens?piquete=${animal.piquete.id}`}
+              className="truncate text-texto-suave hover:text-primary hover:underline"
+            >
+              {animal.piquete.nome}
+            </Link>
+          ) : ocultarLote ? null : (
+            <span className="text-texto-suave">Sem piquete</span>
+          )}
         </div>
-        <div>
-          <dt className="text-xs text-texto-suave">Piquete</dt>
-          <dd className="truncate text-texto">
-            {animal.piquete ? (
-              <Link
-                href={`/pastagens?piquete=${animal.piquete.id}`}
-                className="font-medium text-primary hover:underline"
-              >
-                {animal.piquete.nome}
-              </Link>
-            ) : (
-              "—"
-            )}
-          </dd>
-        </div>
-      </dl>
-      <div className="absolute top-3 right-2">
+      )}
+
+      <div className="absolute top-1 right-0.5">
         <AnimalAcoes id={animal.id} brinco={animal.brinco} />
       </div>
     </article>

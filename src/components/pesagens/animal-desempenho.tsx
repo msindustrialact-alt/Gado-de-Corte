@@ -61,7 +61,7 @@ export function AnimalDesempenho({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
         <CardResumo
           rotulo="Peso atual"
           valor={
@@ -69,22 +69,22 @@ export function AnimalDesempenho({
               ? `${formatPeso(desempenho.peso_atual)} · ${formatArroba(desempenho.peso_atual)}`
               : "—"
           }
-          icone={<Weight className="size-6" />}
+          icone={<Weight />}
         />
         <CardResumo
           rotulo="GMD do último intervalo"
           valor={formatGmd(desempenho.gmd_intervalo)}
-          icone={<TrendingUp className="size-6" />}
+          icone={<TrendingUp />}
         />
         <CardResumo
           rotulo="GMD acumulado"
           valor={formatGmd(desempenho.gmd_acumulado)}
-          icone={<TrendingUp className="size-6" />}
+          icone={<TrendingUp />}
         />
         <CardResumo
           rotulo="Custo @ est. em estoque"
           valor={formatCustoArroba(desempenho.custo_por_arroba)}
-          icone={<ChartLine className="size-6" />}
+          icone={<ChartLine />}
         />
       </div>
 

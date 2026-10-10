@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { CircleDollarSign, Plus, Search, Timer, TrendingUp, Weight } from "lucide-react";
 
-import { CardResumo } from "@/components/layout/card-resumo";
 import { PesagensTabela } from "@/components/pesagens/pesagens-tabela";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,7 @@ import {
   type FiltroStatusPesagem,
   type PesagemResumo,
 } from "@/lib/pesagens";
+import { cn } from "@/lib/utils";
 
 export function PesagensTela({
   pesagens,
@@ -61,26 +61,28 @@ export function PesagensTela({
         </Button>
       </header>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <CardResumo
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+        <KpiPesagem
           rotulo="Sessões neste mês"
           valor={formatarInteiro(indicadores.pesagensMes)}
-          icone={<Weight className="size-6" />}
+          icone={<Weight className="size-[18px] text-[#1D6A3D] lg:size-[30px]" strokeWidth={2.25} />}
         />
-        <CardResumo
+        <KpiPesagem
           rotulo="GMD médio"
           valor={formatGmd(indicadores.gmdMedio)}
-          icone={<TrendingUp className="size-6" />}
+          icone={<TrendingUp className="size-[18px] text-[#1D6A3D] lg:size-[30px]" strokeWidth={2.25} />}
         />
-        <CardResumo
+        <KpiPesagem
           rotulo="Custo da @ produzida"
           valor={formatCustoArroba(indicadores.custoArroba)}
-          icone={<CircleDollarSign className="size-6" />}
+          icone={
+            <CircleDollarSign className="size-[18px] text-[#1D6A3D] lg:size-[30px]" strokeWidth={2.25} />
+          }
         />
-        <CardResumo
+        <KpiPesagem
           rotulo="Lotes atrasados"
           valor={formatarInteiro(indicadores.lotesAtrasados)}
-          icone={<Timer className="size-6" />}
+          icone={<Timer className="size-[18px] text-[#1D6A3D] lg:size-[30px]" strokeWidth={2.25} />}
         />
       </div>
 
@@ -124,5 +126,36 @@ export function PesagensTela({
         onNova={() => router.push("/pesagens/nova")}
       />
     </div>
+  );
+}
+
+function KpiPesagem({
+  rotulo,
+  valor,
+  icone,
+}: {
+  rotulo: string;
+  valor: string;
+  icone: ReactNode;
+}) {
+  return (
+    <article
+      className={cn(
+        "flex h-auto min-h-[88px] flex-col items-start gap-1.5 rounded-[12px] border border-border bg-card px-2 py-2 shadow-card",
+        "lg:h-[112px] lg:min-h-0 lg:flex-row lg:items-center lg:gap-2.5 lg:px-3 lg:py-0",
+      )}
+    >
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#DDF1E6] text-[#1D6A3D] lg:size-12 lg:rounded-[12px]">
+        {icone}
+      </div>
+      <div className="min-w-0 w-full">
+        <p className="truncate text-[10px] leading-tight text-texto-suave lg:text-[12px]">
+          {rotulo}
+        </p>
+        <p className="truncate text-[14px] leading-tight font-bold text-texto lg:text-[20px]">
+          {valor}
+        </p>
+      </div>
+    </article>
   );
 }

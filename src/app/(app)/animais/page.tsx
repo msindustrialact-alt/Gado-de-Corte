@@ -65,7 +65,7 @@ export default async function PaginaAnimais({ searchParams }: Props) {
           <div className="hidden md:block">
             <AnimaisTabela animais={animais} filtros={filtros} />
           </div>
-          <div className="flex flex-col gap-3 md:hidden">
+          <div className="flex flex-col gap-2 md:hidden">
             {animais.map((animal) => (
               <AnimalCard key={animal.id} animal={animal} />
             ))}

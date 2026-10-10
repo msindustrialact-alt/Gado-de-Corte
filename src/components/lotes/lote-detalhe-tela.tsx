@@ -95,21 +95,21 @@ export function LoteDetalheTela({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
         <CardResumo
           rotulo="Nº de animais"
           valor={formatarInteiro(lote.qtd_animais)}
-          icone={<IconeBoi className="size-6" />}
+          icone={<IconeBoi />}
         />
         <CardResumo
           rotulo="Peso médio"
           valor={formatPeso(lote.peso_medio)}
-          icone={<Scale className="size-6" />}
+          icone={<Scale />}
         />
         <CardResumo
           rotulo="GMD da última pesagem"
           valor={formatGmd(resumoPesagem.gmd_medio)}
-          icone={<TrendingUp className="size-6" />}
+          icone={<TrendingUp />}
         />
         <CardResumo
           rotulo="Última pesagem"
@@ -118,7 +118,7 @@ export function LoteDetalheTela({
               ? formatarData(resumoPesagem.ultima_data)
               : "Nunca"
           }
-          icone={<Weight className="size-6" />}
+          icone={<Weight />}
         />
       </div>
 
@@ -137,9 +137,9 @@ export function LoteDetalheTela({
               caminho={caminho}
             />
           </div>
-          <div className="flex flex-col gap-3 md:hidden">
+          <div className="flex flex-col gap-2 md:hidden">
             {animais.map((animal) => (
-              <AnimalCard key={animal.id} animal={animal} />
+              <AnimalCard key={animal.id} animal={animal} ocultarLote />
             ))}
           </div>
           <AnimaisPaginacao
