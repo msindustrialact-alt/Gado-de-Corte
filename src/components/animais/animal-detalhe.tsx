@@ -12,6 +12,7 @@ import {
 
 import { FotoAnimal } from "@/components/animais/foto-animal";
 import { SexoBadge, StatusBadge } from "@/components/animais/status-badge";
+import { StatusVacinaBadge } from "@/components/vacinas/vacina-badges";
 import { AnimalDesempenho } from "@/components/pesagens/animal-desempenho";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -33,15 +34,25 @@ import {
   formatGmd,
   type DesempenhoAnimal,
 } from "@/lib/pesagens";
+import type { AvaliacaoVacinaAnimal } from "@/lib/vacinas";
 import { formatarData, formatarMoeda } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
 
 export function AnimalDetalhe({
   animal,
   desempenho,
+  avaliacaoVacinas,
+  historicoVacinas,
 }: {
   animal: AnimalDetalhe;
   desempenho: DesempenhoAnimal;
+  avaliacaoVacinas: AvaliacaoVacinaAnimal;
+  historicoVacinas: Array<{
+    id: string;
+    data: string;
+    vacina_id: string;
+    vacina_nome: string;
+  }>;
 }) {
   const idade = formatIdade(
     animal.data_nascimento,
@@ -275,6 +286,99 @@ export function AnimalDetalhe({
         desempenho={desempenho}
         loteId={animal.lote?.id ?? null}
       />
+
+      <section className="rounded-[16px] border border-border bg-card p-4 shadow-card md:p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-wide text-texto">
+            Vacinas
+          </h2>
+          <StatusVacinaBadge status={avaliacaoVacinas.status} />
+        </div>
+
+        {avaliacaoVacinas.faltantes.length > 0 ? (
+          <div className="mb-4">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-texto-suave">
+              O que falta
+            </p>
+            <ul className="space-y-1.5">
+              {avaliacaoVacinas.faltantes.map((item) => (
+                <li
+                  key={`${item.vacina_id}-${item.motivo}`}
+                  className="flex flex-wrap items-baseline justify-between gap-2 text-sm"
+                >
+                  <span className="font-medium text-texto">
+                    {item.vacina_nome}
+                  </span>
+                  <span className="text-texto-suave">
+                    {item.motivo === "nunca"
+                      ? "Nunca aplicada"
+                      : item.motivo === "intervalo_vencido"
+                        ? "Intervalo vencido"
+                        : "Sem data de nascimento"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : avaliacaoVacinas.status === "em_dia" ? (
+          <p className="mb-4 text-sm text-texto-suave">
+            Protocolo em dia para este animal.
+          </p>
+        ) : avaliacaoVacinas.status === "sem_protocolo" ? (
+          <p className="mb-4 text-sm text-texto-suave">
+            Nenhum protocolo ativo. Cadastre em Sanidade → Vacinas.
+          </p>
+        ) : null}
+
+        {historicoVacinas.length > 0 ? (
+          <div className="mb-4">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-texto-suave">
+              Histórico
+            </p>
+            <ul className="divide-y divide-border rounded-[12px] border border-border">
+              {historicoVacinas.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-texto">
+                    {item.vacina_nome}
+                  </span>
+                  <span className="shrink-0 text-texto-suave">
+                    {formatarData(item.data)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="mb-4 text-sm text-texto-suave">
+            Nenhuma aplicação registrada.
+          </p>
+        )}
+
+        {animal.lote?.id ? (
+          <Link
+            href={`/sanidade/vacinas/aplicar?lote=${animal.lote.id}`}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-9 rounded-[10px]",
+            )}
+          >
+            Aplicar no lote
+          </Link>
+        ) : (
+          <Link
+            href="/sanidade/vacinas"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-9 rounded-[10px]",
+            )}
+          >
+            Ver vacinas
+          </Link>
+        )}
+      </section>
 
       {animal.status !== "ativo" ? (
         <Secao titulo="Saída">

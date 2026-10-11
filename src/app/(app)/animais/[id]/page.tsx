@@ -5,6 +5,10 @@ import { AnimalDetalhe } from "@/components/animais/animal-detalhe";
 import { buttonVariants } from "@/components/ui/button";
 import { getAnimalPorId } from "@/lib/animais/data";
 import { getHistoricoAnimal } from "@/lib/pesagens/data";
+import {
+  getAvaliacaoAnimal,
+  getHistoricoAnimalVacinas,
+} from "@/lib/vacinas/data";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -24,10 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PaginaAnimal({ params }: Props) {
   const { id } = await params;
-  const [animal, desempenho] = await Promise.all([
-    getAnimalPorId(id),
-    getHistoricoAnimal(id),
-  ]);
+  const [animal, desempenho, avaliacaoVacinas, historicoVacinas] =
+    await Promise.all([
+      getAnimalPorId(id),
+      getHistoricoAnimal(id),
+      getAvaliacaoAnimal(id),
+      getHistoricoAnimalVacinas(id),
+    ]);
 
   if (!animal) {
     return (
@@ -54,5 +61,12 @@ export default async function PaginaAnimal({ params }: Props) {
     );
   }
 
-  return <AnimalDetalhe animal={animal} desempenho={desempenho} />;
+  return (
+    <AnimalDetalhe
+      animal={animal}
+      desempenho={desempenho}
+      avaliacaoVacinas={avaliacaoVacinas}
+      historicoVacinas={historicoVacinas}
+    />
+  );
 }
