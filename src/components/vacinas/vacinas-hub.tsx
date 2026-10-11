@@ -94,7 +94,13 @@ export function VacinasHub({
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusVacinaBadge
-                    status={lote.status === "em_dia" ? "em_dia" : "incompleto"}
+                    status={
+                      lote.status === "em_dia"
+                        ? "em_dia"
+                        : lote.qtd_atrasado > 0
+                          ? "atrasado"
+                          : "incompleto"
+                    }
                   />
                   <Link
                     href={`/sanidade/vacinas/aplicar?lote=${lote.lote_id}`}

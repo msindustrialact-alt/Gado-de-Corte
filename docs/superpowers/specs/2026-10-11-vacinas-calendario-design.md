@@ -1,8 +1,8 @@
 # Design: Calendário de Vacinas (Sanidade)
 
 **Data:** 2026-10-11  
-**Status:** Aprovado em brainstorming (aguardando revisão do arquivo)  
-**Rota:** `/sanidade/vacinas` (hoje placeholder `EmBreve`)
+**Status:** Implementado (MVP)  
+**Rota:** `/sanidade/vacinas`
 
 ## 1. Objetivo
 
