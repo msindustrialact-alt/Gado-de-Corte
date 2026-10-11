@@ -14,6 +14,10 @@ import {
 import { getFazendaAtiva } from "@/lib/fazenda";
 import { getIndicadoresPesagem, getLotesAtrasadosPesagem } from "@/lib/pesagens/data";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getLotesComVacinaPendente,
+  getSessoesRecentes,
+} from "@/lib/vacinas/data";
 
 export type {
   DesempenhoLote,
@@ -207,10 +211,14 @@ export async function getDesempenhoLotes(): Promise<DesempenhoLote[]> {
 }
 
 export async function getProximosManejos(): Promise<ProximoManejo[]> {
+  const fazenda = await getFazendaAtiva();
   const atrasados = await getLotesAtrasadosPesagem();
+  const vacinasPendentes = fazenda
+    ? await getLotesComVacinaPendente()
+    : [];
   const agora = new Date();
 
-  return atrasados.map((lote, indice) => {
+  const pesagens: ProximoManejo[] = atrasados.map((lote, indice) => {
     const data = new Date(agora);
     data.setDate(data.getDate() + indice);
 
@@ -223,6 +231,32 @@ export async function getProximosManejos(): Promise<ProximoManejo[]> {
       href: `/pesagens/nova?lote=${lote.id}`,
     };
   });
+
+  const vacinacoes: ProximoManejo[] = vacinasPendentes.map((lote) => ({
+    id: `vacina-${lote.lote_id}`,
+    titulo: "Vacinação pendente",
+    subtitulo: `${lote.nome} · ${lote.qtd_pendentes} animais`,
+    data: agora,
+    tipo: "vacinacao" as const,
+    href: `/sanidade/vacinas/aplicar?lote=${lote.lote_id}`,
+  }));
+
+  const mistos: ProximoManejo[] = [];
+  let i = 0;
+  let j = 0;
+  while (mistos.length < 8 && (i < pesagens.length || j < vacinacoes.length)) {
+    if (i < pesagens.length) {
+      mistos.push(pesagens[i]!);
+      i += 1;
+    }
+    if (mistos.length >= 8) break;
+    if (j < vacinacoes.length) {
+      mistos.push(vacinacoes[j]!);
+      j += 1;
+    }
+  }
+
+  return mistos;
 }
 
 export async function getDistribuicaoRebanho(): Promise<FatiaRebanho[]> {
@@ -351,20 +385,22 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_pesagens_resumo")
-    .select("id, lote_nome, qtd_pesados, data, status")
-    .eq("fazenda_id", fazenda.id)
-    .is("deleted_at", null)
-    .order("data", { ascending: false })
-    .limit(5);
+  const [{ data, error }, sessoesVacina] = await Promise.all([
+    supabase
+      .from("vw_pesagens_resumo")
+      .select("id, lote_nome, qtd_pesados, data, status")
+      .eq("fazenda_id", fazenda.id)
+      .is("deleted_at", null)
+      .order("data", { ascending: false })
+      .limit(8),
+    getSessoesRecentes(8),
+  ]);
 
   if (error) {
     console.error(error);
-    return [];
   }
 
-  return (data ?? []).flatMap((linha) => {
+  const pesagens: Ocorrencia[] = (data ?? []).flatMap((linha) => {
     if (!linha.id || !linha.data) {
       return [];
     }
@@ -372,7 +408,10 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
     return [
       {
         id: linha.id,
-        titulo: linha.status === "concluida" ? "Pesagem realizada" : "Pesagem em andamento",
+        titulo:
+          linha.status === "concluida"
+            ? "Pesagem realizada"
+            : "Pesagem em andamento",
         subtitulo: `${linha.lote_nome ?? "Lote"} · ${linha.qtd_pesados ?? 0} animais`,
         data: new Date(`${linha.data}T00:00:00`),
         tipo: "pesagem" as const,
@@ -380,6 +419,19 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
       },
     ];
   });
+
+  const vacinacoes: Ocorrencia[] = sessoesVacina.map((sessao) => ({
+    id: `vacina-${sessao.id}`,
+    titulo: "Vacinação realizada",
+    subtitulo: `${sessao.lote_nome} · ${sessao.qtd_aplicados} animais`,
+    data: new Date(`${sessao.data}T00:00:00`),
+    tipo: "vacinacao" as const,
+    href: "/sanidade/vacinas",
+  }));
+
+  return [...pesagens, ...vacinacoes]
+    .sort((a, b) => b.data.getTime() - a.data.getTime())
+    .slice(0, 8);
 }
 
 export async function getRebanhoPorFazenda(): Promise<RebanhoFazenda[]> {
