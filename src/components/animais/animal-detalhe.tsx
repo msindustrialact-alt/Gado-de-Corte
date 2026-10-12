@@ -320,7 +320,11 @@ export function AnimalDetalhe({
           </div>
         ) : avaliacaoVacinas.status === "em_dia" ? (
           <p className="mb-4 text-sm text-texto-suave">
-            Protocolo em dia para este animal.
+            Vacinações registradas em dia (realizado).
+          </p>
+        ) : avaliacaoVacinas.status === "incompleto" ? (
+          <p className="mb-4 text-sm text-texto-suave">
+            Nenhuma vacinação registrada para este animal.
           </p>
         ) : avaliacaoVacinas.status === "sem_protocolo" ? (
           <p className="mb-4 text-sm text-texto-suave">

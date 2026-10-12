@@ -62,7 +62,7 @@ export function ProtocoloForm({
       ...atual,
       {
         vacina_id: vacinaId,
-        obrigatoria: true,
+        obrigatoria: false,
         idade_minima_dias: "",
         ordem: atual.length,
       },
@@ -106,7 +106,7 @@ export function ProtocoloForm({
       const resultado = await salvarProtocoloAction({
         id: protocolo?.id ?? "",
         nome: nomeProtocolo,
-        itens,
+        itens: itens.map((item) => ({ ...item, obrigatoria: false })),
       });
 
       if (!resultado.ok) {
@@ -176,7 +176,7 @@ export function ProtocoloForm({
             return (
               <div
                 key={`${item.vacina_id}-${indice}`}
-                className="grid gap-2 rounded-[10px] border border-border p-3 sm:grid-cols-[1fr_auto_auto]"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-border p-3"
               >
                 <p className="text-sm font-medium text-texto">
                   {vacina?.nome ?? "Vacina"}
@@ -190,22 +190,6 @@ export function ProtocoloForm({
                     </span>
                   )}
                 </p>
-                <label className="flex items-center gap-2 text-xs text-texto">
-                  <input
-                    type="checkbox"
-                    checked={item.obrigatoria}
-                    onChange={(e) =>
-                      setItens((atual) =>
-                        atual.map((linha, i) =>
-                          i === indice
-                            ? { ...linha, obrigatoria: e.target.checked }
-                            : linha,
-                        ),
-                      )
-                    }
-                  />
-                  Obrigatória
-                </label>
                 <Button
                   type="button"
                   variant="ghost"

@@ -53,12 +53,12 @@ export function VacinasHub({
 
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
         <CardResumo
-          rotulo="Em dia"
+          rotulo="Realizado"
           valor={formatarInteiro(status.kpis.em_dia)}
           icone={<Syringe />}
         />
         <CardResumo
-          rotulo="Incompleto"
+          rotulo="Pendente"
           valor={formatarInteiro(status.kpis.incompleto)}
           icone={<Syringe />}
         />
@@ -87,8 +87,8 @@ export function VacinasHub({
                 <div className="min-w-0">
                   <p className="font-medium text-texto">{lote.lote_nome}</p>
                   <p className="text-xs text-texto-suave">
-                    {lote.qtd_em_dia} em dia · {lote.qtd_incompleto} incompleto ·{" "}
-                    {lote.qtd_atrasado} atrasado
+                    {lote.qtd_em_dia} realizado · {lote.qtd_incompleto}{" "}
+                    pendente · {lote.qtd_atrasado} atrasado
                     {lote.qtd_total > 0
                       ? ` · ${lote.qtd_total} animais`
                       : ""}

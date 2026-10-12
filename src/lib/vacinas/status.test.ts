@@ -2,161 +2,87 @@ import { describe, expect, it } from "vitest";
 
 import { avaliarStatusAnimal } from "@/lib/vacinas";
 
-const protocolo2 = [
+const protocolo = [
   {
-    vacina_id: "v1",
-    vacina_nome: "Aftosa",
-    obrigatoria: true,
+    vacina_id: "clo",
+    vacina_nome: "Clostridioses",
+    obrigatoria: false,
     idade_minima_dias: null,
-    intervalo_dias: null,
+    intervalo_dias: 365,
   },
   {
-    vacina_id: "v2",
+    vacina_id: "rai",
     vacina_nome: "Raiva",
-    obrigatoria: true,
+    obrigatoria: false,
     idade_minima_dias: null,
-    intervalo_dias: null,
+    intervalo_dias: 365,
+  },
+  {
+    vacina_id: "ibr",
+    vacina_nome: "IBR / BVD",
+    obrigatoria: false,
+    idade_minima_dias: null,
+    intervalo_dias: 365,
   },
 ];
 
 describe("avaliarStatusAnimal", () => {
-  it("sem realizacoes → incompleto com 2 faltantes", () => {
+  it("sem realizacoes → pendente", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      itensProtocolo: protocolo2,
+      itensProtocolo: protocolo,
       realizacoes: [],
     });
     expect(r.status).toBe("incompleto");
-    expect(r.faltantes).toHaveLength(2);
+    expect(r.faltantes).toHaveLength(0);
   });
 
-  it("1 de 2 aplicadas → incompleto com 1 faltante", () => {
+  it("aplicou 2 vacinas → realizado (não exige as demais)", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      itensProtocolo: protocolo2,
-      realizacoes: [{ vacina_id: "v1", data: "2026-09-01" }],
-    });
-    expect(r.status).toBe("incompleto");
-    expect(r.faltantes.map((f) => f.vacina_id)).toEqual(["v2"]);
-  });
-
-  it("ambas aplicadas → em_dia (concluída)", () => {
-    const r = avaliarStatusAnimal({
-      hoje: "2026-10-11",
-      dataNascimento: null,
-      itensProtocolo: protocolo2,
+      itensProtocolo: protocolo,
       realizacoes: [
-        { vacina_id: "v1", data: "2026-09-01" },
-        { vacina_id: "v2", data: "2026-09-01" },
+        { vacina_id: "clo", data: "2026-10-11" },
+        { vacina_id: "rai", data: "2026-10-11" },
       ],
     });
     expect(r.status).toBe("em_dia");
     expect(r.faltantes).toHaveLength(0);
   });
 
-  it("intervalo vencido → atrasado", () => {
+  it("aplicou e intervalo vencido → atrasado", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      itensProtocolo: [
-        {
-          vacina_id: "v1",
-          vacina_nome: "Aftosa",
-          obrigatoria: true,
-          idade_minima_dias: 90,
-          intervalo_dias: 180,
-        },
-      ],
-      realizacoes: [{ vacina_id: "v1", data: "2026-01-01" }],
+      itensProtocolo: protocolo,
+      realizacoes: [{ vacina_id: "clo", data: "2025-01-01" }],
     });
     expect(r.status).toBe("atrasado");
     expect(r.faltantes[0]?.motivo).toBe("intervalo_vencido");
   });
 
-  it("idade minima no protocolo é ignorada — sem dose → incompleto", () => {
+  it("dose única sem intervalo → realizado", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: null,
       itensProtocolo: [
         {
-          vacina_id: "v1",
+          vacina_id: "bru",
           vacina_nome: "Brucelose",
-          obrigatoria: true,
-          idade_minima_dias: 90,
+          obrigatoria: false,
+          idade_minima_dias: null,
           intervalo_dias: null,
         },
       ],
-      realizacoes: [],
-    });
-    expect(r.status).toBe("incompleto");
-    expect(r.faltantes[0]?.motivo).toBe("nunca");
-  });
-
-  it("com idade minima e dose → em_dia sem olhar nascimento", () => {
-    const r = avaliarStatusAnimal({
-      hoje: "2026-10-11",
-      dataNascimento: null,
-      itensProtocolo: [
-        {
-          vacina_id: "v1",
-          vacina_nome: "Clostridioses",
-          obrigatoria: true,
-          idade_minima_dias: 120,
-          intervalo_dias: 365,
-        },
-      ],
-      realizacoes: [{ vacina_id: "v1", data: "2026-09-01" }],
+      realizacoes: [{ vacina_id: "bru", data: "2026-01-01" }],
     });
     expect(r.status).toBe("em_dia");
   });
 
-  it("2 de 4 obrigatórias aplicadas → incompleto", () => {
-    const r = avaliarStatusAnimal({
-      hoje: "2026-10-11",
-      itensProtocolo: [
-        {
-          vacina_id: "ibr",
-          vacina_nome: "IBR / BVD",
-          obrigatoria: true,
-          idade_minima_dias: 90,
-          intervalo_dias: 365,
-        },
-        {
-          vacina_id: "bru",
-          vacina_nome: "Brucelose",
-          obrigatoria: true,
-          idade_minima_dias: 90,
-          intervalo_dias: null,
-        },
-        {
-          vacina_id: "clo",
-          vacina_nome: "Clostridioses",
-          obrigatoria: true,
-          idade_minima_dias: 120,
-          intervalo_dias: 365,
-        },
-        {
-          vacina_id: "rai",
-          vacina_nome: "Raiva",
-          obrigatoria: true,
-          idade_minima_dias: 120,
-          intervalo_dias: 365,
-        },
-      ],
-      realizacoes: [
-        { vacina_id: "clo", data: "2026-10-11" },
-        { vacina_id: "rai", data: "2026-10-11" },
-      ],
-    });
-    expect(r.status).toBe("incompleto");
-    expect(r.faltantes.map((f) => f.vacina_id).sort()).toEqual(["bru", "ibr"]);
-  });
-
-  it("protocolo vazio → sem_protocolo", () => {
+  it("protocolo vazio com aplicação → realizado", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
       itensProtocolo: [],
-      realizacoes: [],
+      realizacoes: [{ vacina_id: "x", data: "2026-10-01" }],
     });
-    expect(r.status).toBe("sem_protocolo");
+    expect(r.status).toBe("em_dia");
   });
 });

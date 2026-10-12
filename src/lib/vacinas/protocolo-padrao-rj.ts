@@ -22,7 +22,7 @@ export const VACINAS_PROTOCOLO_PADRAO_RJ: VacinaPadraoRj[] = [
     nome: "IBR / BVD",
     intervalo_dias: 365,
     idade_minima_dias: null,
-    obrigatoria: true,
+    obrigatoria: false,
     ordem: 0,
     observacoes:
       "Sugestão: iniciar ~3 meses. Primovacinados: 1ª dose + reforço 30 dias. Matrizes/touros: 30–60 dias antes da estação de monta. Status no sistema: só após registrar a aplicação.",
@@ -31,7 +31,7 @@ export const VACINAS_PROTOCOLO_PADRAO_RJ: VacinaPadraoRj[] = [
     nome: "Brucelose (B19 ou RB51)",
     intervalo_dias: null,
     idade_minima_dias: null,
-    obrigatoria: true,
+    obrigatoria: false,
     ordem: 1,
     observacoes:
       "Sugestão: dose única em fêmeas de 3 a 8 meses. Vet. habilitado. Machos nunca. Status: só após registrar a aplicação (filtrar sexo no lote).",
@@ -40,7 +40,7 @@ export const VACINAS_PROTOCOLO_PADRAO_RJ: VacinaPadraoRj[] = [
     nome: "Clostridioses",
     intervalo_dias: 365,
     idade_minima_dias: null,
-    obrigatoria: true,
+    obrigatoria: false,
     ordem: 2,
     observacoes:
       "Sugestão: 1ª dose ~4 meses; reforço 30 dias; depois anual (ou semestral se histórico alto). Status: só após registrar a aplicação.",
@@ -49,7 +49,7 @@ export const VACINAS_PROTOCOLO_PADRAO_RJ: VacinaPadraoRj[] = [
     nome: "Raiva dos Herbívoros",
     intervalo_dias: 365,
     idade_minima_dias: null,
-    obrigatoria: true,
+    obrigatoria: false,
     ordem: 3,
     observacoes:
       "Sugestão: 1ª dose ~4 meses; reforço 30 dias; revacinação anual no RJ. Status: só após registrar a aplicação.",

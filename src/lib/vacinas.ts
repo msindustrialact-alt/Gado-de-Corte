@@ -8,8 +8,8 @@ export type StatusVacinaAnimal =
 export type ItemProtocoloVacina = {
   vacina_id: string;
   vacina_nome: string;
+  /** Campo legado; status não usa obrigatoriedade. */
   obrigatoria: boolean;
-  /** Mantido no tipo por compatibilidade; não entra no cálculo de status. */
   idade_minima_dias: number | null;
   intervalo_dias: number | null;
 };
@@ -33,8 +33,8 @@ export type AvaliacaoVacinaAnimal = {
 };
 
 export const LABELS_STATUS_VACINA: Record<StatusVacinaAnimal, string> = {
-  em_dia: "Em dia",
-  incompleto: "Incompleto",
+  em_dia: "Realizado",
+  incompleto: "Pendente",
   atrasado: "Atrasado",
   sem_protocolo: "Sem protocolo",
   indefinido: "Indefinido",
@@ -76,62 +76,53 @@ function ultimaPorVacina(
 }
 
 /**
- * Status só pela realização: aplicada = ok; nunca = incompleto;
- * fora do intervalo = atrasado. Idade/nascimento não entram.
+ * Status só pelo que foi aplicado (você escolhe a vacina):
+ * - sem nenhuma aplicação → Pendente
+ * - aplicações dentro do intervalo (se houver) → Realizado
+ * - alguma aplicação fora do intervalo → Atrasado
  */
 export function avaliarStatusAnimal(params: {
   hoje: string;
-  /** Ignorado — mantido na assinatura por compatibilidade. */
   dataNascimento?: string | null;
   itensProtocolo: ItemProtocoloVacina[];
   realizacoes: RealizacaoVacina[];
 }): AvaliacaoVacinaAnimal {
-  const obrigatorias = params.itensProtocolo.filter((item) => item.obrigatoria);
-
-  if (obrigatorias.length === 0) {
-    return { status: "sem_protocolo", faltantes: [] };
-  }
-
   const ultimas = ultimaPorVacina(params.realizacoes);
+
+  if (ultimas.size === 0) {
+    return { status: "incompleto", faltantes: [] };
+  }
+
+  const metaPorVacina = new Map(
+    params.itensProtocolo.map((item) => [
+      item.vacina_id,
+      {
+        nome: item.vacina_nome,
+        intervalo_dias: item.intervalo_dias,
+      },
+    ]),
+  );
+
   const faltantes: VacinaFaltante[] = [];
-  let temNunca = false;
-  let temIntervaloVencido = false;
 
-  for (const item of obrigatorias) {
-    const ultima = ultimas.get(item.vacina_id) ?? null;
+  for (const [vacinaId, ultima] of ultimas) {
+    const meta = metaPorVacina.get(vacinaId);
+    const intervalo = meta?.intervalo_dias ?? null;
+    if (intervalo == null) continue;
 
-    if (!ultima) {
-      temNunca = true;
+    const proxima = adicionarDias(ultima, intervalo);
+    if (params.hoje > proxima) {
       faltantes.push({
-        vacina_id: item.vacina_id,
-        vacina_nome: item.vacina_nome,
-        motivo: "nunca",
-        ultima_data: null,
-        proxima_prevista: null,
+        vacina_id: vacinaId,
+        vacina_nome: meta?.nome ?? "Vacina",
+        motivo: "intervalo_vencido",
+        ultima_data: ultima,
+        proxima_prevista: proxima,
       });
-      continue;
-    }
-
-    if (item.intervalo_dias != null) {
-      const proxima = adicionarDias(ultima, item.intervalo_dias);
-      if (params.hoje > proxima) {
-        temIntervaloVencido = true;
-        faltantes.push({
-          vacina_id: item.vacina_id,
-          vacina_nome: item.vacina_nome,
-          motivo: "intervalo_vencido",
-          ultima_data: ultima,
-          proxima_prevista: proxima,
-        });
-      }
     }
   }
 
-  if (temNunca) {
-    return { status: "incompleto", faltantes };
-  }
-
-  if (temIntervaloVencido) {
+  if (faltantes.length > 0) {
     return { status: "atrasado", faltantes };
   }
 
@@ -145,6 +136,6 @@ export function agregarStatusLote(
     return "vazio";
   }
 
-  const todosEmDia = statusAnimais.every((s) => s === "em_dia");
-  return todosEmDia ? "em_dia" : "pendente";
+  const todosRealizados = statusAnimais.every((s) => s === "em_dia");
+  return todosRealizados ? "em_dia" : "pendente";
 }

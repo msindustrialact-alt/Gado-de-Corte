@@ -447,22 +447,21 @@ export async function criarSessaoVacinacao(
   return { ok: true, id: sessao.id, message: "Vacinação registrada." };
 }
 
-function itensDoProtocolo(protocolo: ProtocoloComItens | null): ItemProtocoloVacina[] {
-  if (!protocolo) return [];
-  return protocolo.itens.map((item) => ({
-    vacina_id: item.vacina_id,
-    vacina_nome: item.vacina_nome,
-    obrigatoria: item.obrigatoria,
-    idade_minima_dias: item.idade_minima_dias,
-    intervalo_dias: item.intervalo_dias,
-  }));
-}
-
 export async function getStatusRebanho() {
   const fazenda = await exigirFazenda();
   const supabase = await createClient();
-  const protocolo = await getProtocoloAtivo();
-  const itens = itensDoProtocolo(protocolo);
+  const [protocolo, catalogo] = await Promise.all([
+    getProtocoloAtivo(),
+    getVacinas(true),
+  ]);
+  // Intervalos do catálogo (status não depende de obrigatoriedade).
+  const itens: ItemProtocoloVacina[] = catalogo.map((vacina) => ({
+    vacina_id: vacina.id,
+    vacina_nome: vacina.nome,
+    obrigatoria: false,
+    idade_minima_dias: null,
+    intervalo_dias: vacina.intervalo_dias,
+  }));
   const hoje = hojeISO();
 
   const [{ data: animais }, { data: realizacoes }, { data: lotes }] =
@@ -592,27 +591,25 @@ export async function getAvaliacaoAnimal(
 ): Promise<AvaliacaoVacinaAnimal> {
   const fazenda = await exigirFazenda();
   const supabase = await createClient();
-  const protocolo = await getProtocoloAtivo();
+  const catalogo = await getVacinas(true);
+  const itens: ItemProtocoloVacina[] = catalogo.map((vacina) => ({
+    vacina_id: vacina.id,
+    vacina_nome: vacina.nome,
+    obrigatoria: false,
+    idade_minima_dias: null,
+    intervalo_dias: vacina.intervalo_dias,
+  }));
 
-  const [{ data: animal }, { data: realizacoes }] = await Promise.all([
-    supabase
-      .from("animais")
-      .select("id, data_nascimento")
-      .eq("id", animalId)
-      .eq("fazenda_id", fazenda.id)
-      .maybeSingle(),
-    supabase
-      .from("vacinacao_aplicacoes")
-      .select("vacina_id, data")
-      .eq("fazenda_id", fazenda.id)
-      .eq("animal_id", animalId)
-      .is("deleted_at", null),
-  ]);
+  const { data: realizacoes } = await supabase
+    .from("vacinacao_aplicacoes")
+    .select("vacina_id, data")
+    .eq("fazenda_id", fazenda.id)
+    .eq("animal_id", animalId)
+    .is("deleted_at", null);
 
   return avaliarStatusAnimal({
     hoje: hojeISO(),
-    dataNascimento: animal?.data_nascimento ?? null,
-    itensProtocolo: itensDoProtocolo(protocolo),
+    itensProtocolo: itens,
     realizacoes: (realizacoes ?? []) as RealizacaoVacina[],
   });
 }
