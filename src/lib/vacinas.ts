@@ -9,6 +9,7 @@ export type ItemProtocoloVacina = {
   vacina_id: string;
   vacina_nome: string;
   obrigatoria: boolean;
+  /** Mantido no tipo por compatibilidade; não entra no cálculo de status. */
   idade_minima_dias: number | null;
   intervalo_dias: number | null;
 };
@@ -21,7 +22,7 @@ export type RealizacaoVacina = {
 export type VacinaFaltante = {
   vacina_id: string;
   vacina_nome: string;
-  motivo: "nunca" | "intervalo_vencido" | "sem_nascimento";
+  motivo: "nunca" | "intervalo_vencido";
   ultima_data: string | null;
   proxima_prevista: string | null;
 };
@@ -74,9 +75,14 @@ function ultimaPorVacina(
   return mapa;
 }
 
+/**
+ * Status só pela realização: aplicada = ok; nunca = incompleto;
+ * fora do intervalo = atrasado. Idade/nascimento não entram.
+ */
 export function avaliarStatusAnimal(params: {
   hoje: string;
-  dataNascimento: string | null;
+  /** Ignorado — mantido na assinatura por compatibilidade. */
+  dataNascimento?: string | null;
   itensProtocolo: ItemProtocoloVacina[];
   realizacoes: RealizacaoVacina[];
 }): AvaliacaoVacinaAnimal {
@@ -88,36 +94,11 @@ export function avaliarStatusAnimal(params: {
 
   const ultimas = ultimaPorVacina(params.realizacoes);
   const faltantes: VacinaFaltante[] = [];
-  let temSemNascimento = false;
   let temNunca = false;
   let temIntervaloVencido = false;
 
   for (const item of obrigatorias) {
     const ultima = ultimas.get(item.vacina_id) ?? null;
-
-    if (item.idade_minima_dias != null) {
-      if (!params.dataNascimento) {
-        // Sem nascimento: se já aplicou, segue pelo intervalo; se não, falta
-        // com aviso (não bloqueia o animal inteiro como "indefinido" cego).
-        if (!ultima) {
-          temSemNascimento = true;
-          temNunca = true;
-          faltantes.push({
-            vacina_id: item.vacina_id,
-            vacina_nome: item.vacina_nome,
-            motivo: "sem_nascimento",
-            ultima_data: null,
-            proxima_prevista: null,
-          });
-          continue;
-        }
-      } else {
-        const idadeDias = diasEntre(params.dataNascimento, params.hoje);
-        if (idadeDias < item.idade_minima_dias) {
-          continue;
-        }
-      }
-    }
 
     if (!ultima) {
       temNunca = true;
@@ -146,13 +127,8 @@ export function avaliarStatusAnimal(params: {
     }
   }
 
-  // Incompleto é mais acionável que indefinido quando falta dose.
   if (temNunca) {
     return { status: "incompleto", faltantes };
-  }
-
-  if (temSemNascimento) {
-    return { status: "indefinido", faltantes };
   }
 
   if (temIntervaloVencido) {

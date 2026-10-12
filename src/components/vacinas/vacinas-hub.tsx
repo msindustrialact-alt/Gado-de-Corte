@@ -73,14 +73,6 @@ export function VacinasHub({
           icone={<Syringe />}
         />
       </div>
-      {status.kpis.indefinido > 0 ? (
-        <p className="text-xs text-texto-suave">
-          {formatarInteiro(status.kpis.indefinido)} animal(is) com status
-          indefinido (cadastre a data de nascimento para refinar a idade
-          mínima).
-        </p>
-      ) : null}
-
       <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
         <h2 className="text-sm font-semibold text-texto">Lotes</h2>
         <div className="mt-3 space-y-2">
@@ -97,9 +89,6 @@ export function VacinasHub({
                   <p className="text-xs text-texto-suave">
                     {lote.qtd_em_dia} em dia · {lote.qtd_incompleto} incompleto ·{" "}
                     {lote.qtd_atrasado} atrasado
-                    {lote.qtd_indefinido > 0
-                      ? ` · ${lote.qtd_indefinido} indefinido`
-                      : ""}
                     {lote.qtd_total > 0
                       ? ` · ${lote.qtd_total} animais`
                       : ""}

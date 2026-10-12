@@ -1,18 +1,14 @@
 /**
  * Protocolo sanitário de referência (gado de corte — perfil RJ).
- * Adaptado ao schema MVP: idade_minima_dias + intervalo_dias único por vacina.
- *
- * Limitações conscientes:
- * - Primovacinação (reforço 30d) não tem intervalo separado da manutenção anual;
- *   usamos intervalo de manutenção (365d) e documentamos o reforço nas observações.
- * - Brucelose: sistema ainda não filtra por sexo — observar “só fêmeas”.
- * - Estação de monta / declaração de rebanho ficam fora do calendário de vacina.
+ * Status do animal: só por realização (aplicou = em dia naquela vacina).
+ * Idade sugerida e reforço de 30d na primovacinação ficam nas observações.
  */
 
 export type VacinaPadraoRj = {
   nome: string;
   intervalo_dias: number | null;
   observacoes: string;
+  /** Não usado no status; gravado null no protocolo. */
   idade_minima_dias: number | null;
   obrigatoria: boolean;
   ordem: number;
@@ -25,46 +21,46 @@ export const VACINAS_PROTOCOLO_PADRAO_RJ: VacinaPadraoRj[] = [
   {
     nome: "IBR / BVD",
     intervalo_dias: 365,
-    idade_minima_dias: 90,
+    idade_minima_dias: null,
     obrigatoria: true,
     ordem: 0,
     observacoes:
-      "Iniciar ~3 meses. Primovacinados: 1ª dose + reforço 30 dias. Matrizes/touros: reforçar 30–60 dias antes da estação de monta (controle operacional).",
+      "Sugestão: iniciar ~3 meses. Primovacinados: 1ª dose + reforço 30 dias. Matrizes/touros: 30–60 dias antes da estação de monta. Status no sistema: só após registrar a aplicação.",
   },
   {
     nome: "Brucelose (B19 ou RB51)",
     intervalo_dias: null,
-    idade_minima_dias: 90,
+    idade_minima_dias: null,
     obrigatoria: true,
     ordem: 1,
     observacoes:
-      "Dose única em fêmeas de 3 a 8 meses. Obrigatória por vet. habilitado. Machos nunca devem ser vacinados. (MVP: filtrar sexo manualmente no lote.)",
+      "Sugestão: dose única em fêmeas de 3 a 8 meses. Vet. habilitado. Machos nunca. Status: só após registrar a aplicação (filtrar sexo no lote).",
   },
   {
     nome: "Clostridioses",
     intervalo_dias: 365,
-    idade_minima_dias: 120,
+    idade_minima_dias: null,
     obrigatoria: true,
     ordem: 2,
     observacoes:
-      "1ª dose ~4 meses. Primovacinados: reforço 30 dias após a 1ª. Manutenção anual (ou semestral se histórico alto de morte súbita).",
+      "Sugestão: 1ª dose ~4 meses; reforço 30 dias; depois anual (ou semestral se histórico alto). Status: só após registrar a aplicação.",
   },
   {
     nome: "Raiva dos Herbívoros",
     intervalo_dias: 365,
-    idade_minima_dias: 120,
+    idade_minima_dias: null,
     obrigatoria: true,
     ordem: 3,
     observacoes:
-      "1ª dose ~4 meses. Primovacinados: reforço 30 dias. Revacinação anual recomendada no RJ até o abate/embarque.",
+      "Sugestão: 1ª dose ~4 meses; reforço 30 dias; revacinação anual no RJ. Status: só após registrar a aplicação.",
   },
   {
     nome: "Leptospirose",
     intervalo_dias: 365,
-    idade_minima_dias: 365,
+    idade_minima_dias: null,
     obrigatoria: false,
     ordem: 4,
     observacoes:
-      "Reprodução: matrizes e touros — revacinar anualmente, idealmente 30–60 dias antes da estação de monta. Opcional no MVP de engorda.",
+      "Sugestão (reprodução): anual, 30–60 dias antes da estação de monta. Opcional na engorda. Status: só após registrar a aplicação.",
   },
 ];

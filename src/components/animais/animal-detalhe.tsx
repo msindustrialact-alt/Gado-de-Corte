@@ -312,9 +312,7 @@ export function AnimalDetalhe({
                   <span className="text-texto-suave">
                     {item.motivo === "nunca"
                       ? "Nunca aplicada"
-                      : item.motivo === "intervalo_vencido"
-                        ? "Intervalo vencido"
-                        : "Sem data de nascimento"}
+                      : "Intervalo vencido"}
                   </span>
                 </li>
               ))}

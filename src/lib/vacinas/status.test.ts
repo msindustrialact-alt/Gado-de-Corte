@@ -23,7 +23,6 @@ describe("avaliarStatusAnimal", () => {
   it("sem realizacoes → incompleto com 2 faltantes", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
       itensProtocolo: protocolo2,
       realizacoes: [],
     });
@@ -34,7 +33,6 @@ describe("avaliarStatusAnimal", () => {
   it("1 de 2 aplicadas → incompleto com 1 faltante", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
       itensProtocolo: protocolo2,
       realizacoes: [{ vacina_id: "v1", data: "2026-09-01" }],
     });
@@ -42,10 +40,10 @@ describe("avaliarStatusAnimal", () => {
     expect(r.faltantes.map((f) => f.vacina_id)).toEqual(["v2"]);
   });
 
-  it("ambas sem intervalo → em_dia", () => {
+  it("ambas aplicadas → em_dia (concluída)", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
+      dataNascimento: null,
       itensProtocolo: protocolo2,
       realizacoes: [
         { vacina_id: "v1", data: "2026-09-01" },
@@ -59,13 +57,12 @@ describe("avaliarStatusAnimal", () => {
   it("intervalo vencido → atrasado", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
       itensProtocolo: [
         {
           vacina_id: "v1",
           vacina_nome: "Aftosa",
           obrigatoria: true,
-          idade_minima_dias: null,
+          idade_minima_dias: 90,
           intervalo_dias: 180,
         },
       ],
@@ -75,7 +72,7 @@ describe("avaliarStatusAnimal", () => {
     expect(r.faltantes[0]?.motivo).toBe("intervalo_vencido");
   });
 
-  it("idade minima sem nascimento e sem dose → incompleto", () => {
+  it("idade minima no protocolo é ignorada — sem dose → incompleto", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
       dataNascimento: null,
@@ -91,10 +88,10 @@ describe("avaliarStatusAnimal", () => {
       realizacoes: [],
     });
     expect(r.status).toBe("incompleto");
-    expect(r.faltantes[0]?.motivo).toBe("sem_nascimento");
+    expect(r.faltantes[0]?.motivo).toBe("nunca");
   });
 
-  it("idade minima sem nascimento mas já aplicada → em_dia", () => {
+  it("com idade minima e dose → em_dia sem olhar nascimento", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
       dataNascimento: null,
@@ -112,10 +109,9 @@ describe("avaliarStatusAnimal", () => {
     expect(r.status).toBe("em_dia");
   });
 
-  it("2 de 4 obrigatórias aplicadas → incompleto (não em dia)", () => {
+  it("2 de 4 obrigatórias aplicadas → incompleto", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
       itensProtocolo: [
         {
           vacina_id: "ibr",
@@ -158,7 +154,6 @@ describe("avaliarStatusAnimal", () => {
   it("protocolo vazio → sem_protocolo", () => {
     const r = avaliarStatusAnimal({
       hoje: "2026-10-11",
-      dataNascimento: "2024-01-01",
       itensProtocolo: [],
       realizacoes: [],
     });

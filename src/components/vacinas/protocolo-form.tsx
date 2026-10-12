@@ -143,8 +143,8 @@ export function ProtocoloForm({
             <h2 className="text-sm font-semibold text-texto">Protocolo ativo</h2>
             <p className="mt-1 max-w-xl text-xs text-texto-suave">
               Pode carregar o calendário de referência ({NOME_PROTOCOLO_PADRAO_RJ}
-              ): idades em dias + reforço anual. Reforço de 30 dias na
-              primovacinação e Brucelose só fêmeas ficam nas observações.
+              ). Status fica em dia só depois de registrar a aplicação. Idade
+              sugerida e reforço ficam nas observações do catálogo.
             </p>
           </div>
           <Button
@@ -176,7 +176,7 @@ export function ProtocoloForm({
             return (
               <div
                 key={`${item.vacina_id}-${indice}`}
-                className="grid gap-2 rounded-[10px] border border-border p-3 sm:grid-cols-[1fr_7rem_auto_auto]"
+                className="grid gap-2 rounded-[10px] border border-border p-3 sm:grid-cols-[1fr_auto_auto]"
               >
                 <p className="text-sm font-medium text-texto">
                   {vacina?.nome ?? "Vacina"}
@@ -184,22 +184,12 @@ export function ProtocoloForm({
                     <span className="ml-2 text-xs text-texto-suave">
                       reforço {vacina.intervalo_dias}d
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="ml-2 text-xs text-texto-suave">
+                      dose única
+                    </span>
+                  )}
                 </p>
-                <Input
-                  value={item.idade_minima_dias}
-                  onChange={(e) =>
-                    setItens((atual) =>
-                      atual.map((linha, i) =>
-                        i === indice
-                          ? { ...linha, idade_minima_dias: e.target.value }
-                          : linha,
-                      ),
-                    )
-                  }
-                  placeholder="Idade mín. dias"
-                  className="h-9"
-                />
                 <label className="flex items-center gap-2 text-xs text-texto">
                   <input
                     type="checkbox"
