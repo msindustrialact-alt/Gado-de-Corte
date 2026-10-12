@@ -7,6 +7,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { AnimalAcoes } from "@/components/animais/animal-acoes";
 import { FotoAnimal } from "@/components/animais/foto-animal";
 import { SexoBadge, StatusBadge } from "@/components/animais/status-badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -31,19 +32,38 @@ export function AnimaisTabela({
   animais,
   filtros,
   caminho = "/animais",
+  selecao,
 }: {
   animais: AnimalListagem[];
   filtros: FiltrosAnimais;
   caminho?: string;
+  selecao?: {
+    selecionados: ReadonlySet<string>;
+    onAlternar: (id: string) => void;
+    onAlternarPagina: (marcar: boolean) => void;
+  };
 }) {
   const router = useRouter();
+  const idsPagina = animais.map((animal) => animal.id);
+  const marcadosNaPagina = idsPagina.filter((id) => selecao?.selecionados.has(id)).length;
+  const todosDaPagina = idsPagina.length > 0 && marcadosNaPagina === idsPagina.length;
 
   return (
     <div className="overflow-hidden rounded-[12px] border border-border bg-card shadow-card">
       <Table>
         <TableHeader className="bg-muted/70">
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-12 pl-4">Foto</TableHead>
+            {selecao ? (
+              <TableHead className="w-10 pl-4">
+                <Checkbox
+                  checked={todosDaPagina}
+                  indeterminate={marcadosNaPagina > 0 && !todosDaPagina}
+                  aria-label="Selecionar os animais desta página"
+                  onCheckedChange={(marcado) => selecao.onAlternarPagina(marcado === true)}
+                />
+              </TableHead>
+            ) : null}
+            <TableHead className={selecao ? "w-12" : "w-12 pl-4"}>Foto</TableHead>
             <TableHead>
               <CabecalhoOrdenavel
                 rotulo="Brinco"
@@ -88,13 +108,29 @@ export function AnimaisTabela({
               className="cursor-pointer hover:bg-muted/60"
               onClick={() => router.push(`/animais/${animal.id}`)}
               onKeyDown={(evento) => {
+                if ((evento.target as HTMLElement).closest("[data-slot=checkbox], a, button")) {
+                  return;
+                }
+
                 if (evento.key === "Enter" || evento.key === " ") {
                   evento.preventDefault();
                   router.push(`/animais/${animal.id}`);
                 }
               }}
             >
-              <TableCell className="pl-4">
+              {selecao ? (
+                <TableCell
+                  className="pl-4"
+                  onClick={(evento) => evento.stopPropagation()}
+                >
+                  <Checkbox
+                    checked={selecao.selecionados.has(animal.id)}
+                    aria-label={`Selecionar brinco ${animal.brinco}`}
+                    onCheckedChange={() => selecao.onAlternar(animal.id)}
+                  />
+                </TableCell>
+              ) : null}
+              <TableCell className={selecao ? undefined : "pl-4"}>
                 <FotoAnimal url={animal.foto_url} />
               </TableCell>
               <TableCell>

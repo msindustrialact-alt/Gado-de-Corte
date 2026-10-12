@@ -239,6 +239,89 @@ export async function atualizarAnimal(
   return { ok: true, id: data.id };
 }
 
+const LIMITE_MOVER_LOTE = 500;
+
+export async function moverAnimaisParaLote(
+  ids: string[],
+  loteId: string,
+): Promise<{ ok: true; quantidade: number } | { ok: false; message: string }> {
+  const unicos = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+
+  if (unicos.length === 0) {
+    return { ok: false, message: "Selecione ao menos um animal." };
+  }
+
+  if (unicos.length > LIMITE_MOVER_LOTE) {
+    return {
+      ok: false,
+      message: `Selecione no máximo ${LIMITE_MOVER_LOTE} animais por vez.`,
+    };
+  }
+
+  if (unicos.some((id) => !/^[0-9a-f-]{36}$/i.test(id))) {
+    return { ok: false, message: "Há um animal inválido na seleção." };
+  }
+
+  const destino = loteId.trim();
+
+  if (destino && !/^[0-9a-f-]{36}$/i.test(destino)) {
+    return { ok: false, message: "Lote inválido." };
+  }
+
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return { ok: false, message: "Não foi possível identificar a fazenda." };
+  }
+
+  const supabase = await createClient();
+
+  if (destino) {
+    const { data: lote, error: erroLote } = await supabase
+      .from("lotes")
+      .select("id")
+      .eq("id", destino)
+      .eq("fazenda_id", fazenda.id)
+      .eq("status", "ativo")
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (erroLote || !lote) {
+      return { ok: false, message: "Esse lote não está disponível." };
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("animais")
+    .update({ lote_id: destino || null })
+    .in("id", unicos)
+    .eq("fazenda_id", fazenda.id)
+    .is("deleted_at", null)
+    .select("id");
+
+  if (error) {
+    console.error(error);
+    return { ok: false, message: "Não foi possível mover os animais." };
+  }
+
+  const quantidade = data?.length ?? 0;
+
+  if (quantidade === 0) {
+    return { ok: false, message: "Nenhum animal foi movido." };
+  }
+
+  revalidatePath("/animais");
+  revalidatePath("/lotes");
+  revalidatePath("/dashboard");
+  revalidatePath("/pastagens");
+
+  if (destino) {
+    revalidatePath(`/lotes/${destino}`);
+  }
+
+  return { ok: true, quantidade };
+}
+
 function asObject(dados: unknown): Record<string, unknown> {
   if (dados && typeof dados === "object") {
     return dados as Record<string, unknown>;

@@ -4,12 +4,15 @@ import { Plus } from "lucide-react";
 
 import { AnimaisFiltros } from "@/components/animais/animais-filtros";
 import { AnimaisPaginacao } from "@/components/animais/animais-paginacao";
-import { AnimaisTabela } from "@/components/animais/animais-tabela";
+import { AnimaisSelecao } from "@/components/animais/animais-selecao";
 import { AnimaisVazio } from "@/components/animais/animais-vazio";
-import { AnimalCard } from "@/components/animais/animal-card";
 import { buttonVariants } from "@/components/ui/button";
 import { lerFiltrosAnimais } from "@/lib/animais";
-import { getListaAnimais, getOpcoesFiltroAnimais } from "@/lib/animais/data";
+import {
+  getIdsAnimaisFiltrados,
+  getListaAnimais,
+  getOpcoesFiltroAnimais,
+} from "@/lib/animais/data";
 import { formatarInteiro } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
 
@@ -24,8 +27,12 @@ type Props = {
 export default async function PaginaAnimais({ searchParams }: Props) {
   const params = await searchParams;
   const filtros = lerFiltrosAnimais(params);
-  const [{ animais, totalFiltrado, totalCadastrados, de, ate }, opcoes] =
-    await Promise.all([getListaAnimais(filtros), getOpcoesFiltroAnimais()]);
+  const [{ animais, totalFiltrado, totalCadastrados, de, ate }, opcoes, idsFiltrados] =
+    await Promise.all([
+      getListaAnimais(filtros),
+      getOpcoesFiltroAnimais(),
+      getIdsAnimaisFiltrados(filtros),
+    ]);
 
   const subtitulo =
     totalCadastrados === 1
@@ -62,14 +69,12 @@ export default async function PaginaAnimais({ searchParams }: Props) {
         <AnimaisVazio />
       ) : (
         <>
-          <div className="hidden md:block">
-            <AnimaisTabela animais={animais} filtros={filtros} />
-          </div>
-          <div className="flex flex-col gap-2 md:hidden">
-            {animais.map((animal) => (
-              <AnimalCard key={animal.id} animal={animal} />
-            ))}
-          </div>
+          <AnimaisSelecao
+            animais={animais}
+            filtros={filtros}
+            idsFiltrados={idsFiltrados}
+            lotes={opcoes.lotes}
+          />
           <AnimaisPaginacao
             filtros={filtros}
             total={totalFiltrado}

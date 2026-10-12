@@ -333,6 +333,88 @@ export async function getListaAnimais(
   };
 }
 
+export async function getIdsAnimaisFiltrados(
+  filtros: FiltrosAnimais,
+): Promise<string[]> {
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const busca = sanitizarBusca(filtros.q);
+
+  let consulta = supabase
+    .from("animais")
+    .select("id")
+    .eq("fazenda_id", fazenda.id)
+    .is("deleted_at", null);
+
+  if (filtros.status !== "todos") {
+    consulta = consulta.eq("status", filtros.status);
+  }
+
+  if (filtros.sexo !== "todos") {
+    consulta = consulta.eq("sexo", filtros.sexo);
+  }
+
+  if (filtros.categoria !== "todos") {
+    consulta = consulta.eq("categoria", filtros.categoria);
+  }
+
+  if (filtros.racaId) {
+    consulta = consulta.eq("raca_id", filtros.racaId);
+  }
+
+  if (filtros.loteId) {
+    consulta = consulta.eq("lote_id", filtros.loteId);
+  }
+
+  if (filtros.piqueteId) {
+    consulta = consulta.eq("piquete_id", filtros.piqueteId);
+  }
+
+  if (filtros.propriedade !== "todas") {
+    consulta = consulta.eq("propriedade", filtros.propriedade);
+  }
+
+  if (busca) {
+    const { data: lotesEncontrados } = await supabase
+      .from("lotes")
+      .select("id")
+      .eq("fazenda_id", fazenda.id)
+      .is("deleted_at", null)
+      .ilike("nome", `%${busca}%`);
+
+    const idsLote = (lotesEncontrados ?? [])
+      .map((lote) => lote.id)
+      .filter(Boolean);
+
+    const partes = [
+      `brinco.ilike.%${busca}%`,
+      `nome.ilike.%${busca}%`,
+      `brinco_eletronico.ilike.%${busca}%`,
+      `sisbov.ilike.%${busca}%`,
+    ];
+
+    if (idsLote.length > 0) {
+      partes.push(`lote_id.in.(${idsLote.join(",")})`);
+    }
+
+    consulta = consulta.or(partes.join(","));
+  }
+
+  const { data, error } = await consulta.order("brinco", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    throw new Error("Não foi possível carregar os animais do filtro.");
+  }
+
+  return (data ?? []).map((linha) => linha.id);
+}
+
 export async function buscarParentes(params: {
   q: string;
   sexo: "macho" | "femea";
