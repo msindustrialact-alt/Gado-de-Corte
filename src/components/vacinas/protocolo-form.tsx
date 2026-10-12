@@ -136,21 +136,20 @@ export function ProtocoloForm({
   }
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
-        <div className="flex flex-wrap items-start justify-between gap-2">
+    <div className="space-y-4 pb-36 md:pb-0">
+      <section className="rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-sm font-semibold text-texto">Protocolo ativo</h2>
             <p className="mt-1 max-w-xl text-xs text-texto-suave">
               Pode carregar o calendário de referência ({NOME_PROTOCOLO_PADRAO_RJ}
-              ). Status fica em dia só depois de registrar a aplicação. Idade
-              sugerida e reforço ficam nas observações do catálogo.
+              ). Status fica realizado só depois de registrar a aplicação.
             </p>
           </div>
           <Button
             type="button"
             variant="outline"
-            className="h-9 shrink-0 rounded-[10px]"
+            className="h-11 w-full shrink-0 rounded-[10px] sm:h-9 sm:w-auto"
             onClick={carregarPadraoRj}
             disabled={pendente}
           >
@@ -264,7 +263,7 @@ export function ProtocoloForm({
         </div>
       </section>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="hidden flex-wrap gap-2 md:flex">
         <Button type="button" onClick={salvar} disabled={pendente || itens.length === 0}>
           Salvar protocolo
         </Button>
@@ -275,6 +274,27 @@ export function ProtocoloForm({
         >
           Cancelar
         </Button>
+      </div>
+
+      <div className="fixed inset-x-0 z-30 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden bottom-[calc(5.25rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-lg gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 flex-1 rounded-[10px]"
+            onClick={() => router.push("/sanidade/vacinas")}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            className="h-11 flex-[1.4] rounded-[10px]"
+            onClick={salvar}
+            disabled={pendente || itens.length === 0}
+          >
+            Salvar
+          </Button>
+        </div>
       </div>
 
       {vacinas.length > 0 ? (

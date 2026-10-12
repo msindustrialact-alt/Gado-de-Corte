@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { hojeISO } from "@/lib/animais";
 import type { AnimalVacinaRow, ProtocoloComItens, Vacina } from "@/lib/vacinas/data";
 import type { LoteResumo } from "@/lib/lotes";
+import { cn } from "@/lib/utils";
 
 export function AplicarLoteTela({
   lotes,
@@ -96,15 +97,18 @@ export function AplicarLoteTela({
     });
   }
 
+  const podeEnviar =
+    !pendente && !!loteId && vacinaIds.length > 0 && animalIds.length > 0;
+
   return (
-    <div className="space-y-4">
-      <section className="grid gap-3 rounded-[12px] border border-border bg-card p-4 shadow-card md:grid-cols-2">
+    <div className="space-y-4 pb-36 md:pb-0">
+      <section className="grid gap-3 rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4 md:grid-cols-2">
         <label>
           <span className="mb-1 block text-xs text-texto-suave">Lote</span>
           <select
             value={loteId}
             onChange={(e) => setLoteId(e.target.value)}
-            className="h-10 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm"
+            className="h-11 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm md:h-10"
           >
             {lotes.map((lote) => (
               <option key={lote.id} value={lote.id}>
@@ -122,28 +126,44 @@ export function AplicarLoteTela({
             value={data}
             max={hojeISO()}
             onChange={(e) => setData(e.target.value)}
-            className="h-10"
+            className="h-11 md:h-10"
           />
         </label>
       </section>
 
-      <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
+      <section className="rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4">
         <h2 className="text-sm font-semibold text-texto">Vacinas</h2>
-        <div className="mt-3 space-y-2">
-          {vacinasAtivas.map((vacina) => (
-            <label key={vacina.id} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={vacinaIds.includes(vacina.id)}
-                onChange={() => toggleVacina(vacina.id)}
-              />
-              {vacina.nome}
-            </label>
-          ))}
+        <p className="mt-0.5 text-xs text-texto-suave">
+          Toque para escolher quais aplicar nesta sessão.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {vacinasAtivas.map((vacina) => {
+            const ativa = vacinaIds.includes(vacina.id);
+            return (
+              <button
+                key={vacina.id}
+                type="button"
+                onClick={() => toggleVacina(vacina.id)}
+                className={cn(
+                  "min-h-11 rounded-full border px-3.5 py-2 text-left text-sm font-medium transition-colors",
+                  ativa
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-texto",
+                )}
+              >
+                {vacina.nome}
+                {vacina.intervalo_dias != null ? (
+                  <span className="mt-0.5 block text-[11px] font-normal text-texto-suave">
+                    reforço {vacina.intervalo_dias}d
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
+      <section className="rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-texto">
             Animais ({animalIds.length}/{animais.length})
@@ -153,6 +173,7 @@ export function AplicarLoteTela({
               type="button"
               variant="outline"
               size="sm"
+              className="h-9 rounded-[10px]"
               onClick={() => setAnimalIds(animais.map((a) => a.id))}
             >
               Todos
@@ -161,48 +182,66 @@ export function AplicarLoteTela({
               type="button"
               variant="outline"
               size="sm"
+              className="h-9 rounded-[10px]"
               onClick={() => setAnimalIds([])}
             >
               Limpar
             </Button>
           </div>
         </div>
-        <ul className="mt-3 max-h-[320px] space-y-1 overflow-y-auto">
-          {animais.map((animal) => (
-            <li key={animal.id}>
-              <label className="flex items-center gap-2 rounded-[8px] px-2 py-1.5 text-sm hover:bg-muted/50">
-                <input
-                  type="checkbox"
-                  checked={animalIds.includes(animal.id)}
-                  onChange={() => toggleAnimal(animal.id)}
-                />
-                <span className="font-medium">{animal.brinco}</span>
-                {animal.nome ? (
-                  <span className="text-texto-suave">{animal.nome}</span>
-                ) : null}
-              </label>
-            </li>
-          ))}
+        <ul className="mt-3 max-h-[min(50vh,360px)] space-y-1.5 overflow-y-auto">
+          {animais.map((animal) => {
+            const marcado = animalIds.includes(animal.id);
+            return (
+              <li key={animal.id}>
+                <button
+                  type="button"
+                  onClick={() => toggleAnimal(animal.id)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-[10px] border px-3 py-2.5 text-left text-sm",
+                    marcado
+                      ? "border-primary/30 bg-primary/5"
+                      : "border-border bg-card",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-5 shrink-0 items-center justify-center rounded border text-[11px]",
+                      marcado
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border",
+                    )}
+                  >
+                    {marcado ? "✓" : ""}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="font-semibold text-texto">
+                      {animal.brinco}
+                    </span>
+                    {animal.nome ? (
+                      <span className="ml-2 text-texto-suave">
+                        {animal.nome}
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
 
-      <label className="block rounded-[12px] border border-border bg-card p-4 shadow-card">
+      <label className="block rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4">
         <span className="mb-1 block text-xs text-texto-suave">Observações</span>
         <Input
           value={observacoes}
           onChange={(e) => setObservacoes(e.target.value)}
-          className="h-10"
+          className="h-11 md:h-10"
         />
       </label>
 
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          onClick={enviar}
-          disabled={
-            pendente || !loteId || vacinaIds.length === 0 || animalIds.length === 0
-          }
-        >
+      <div className="hidden gap-2 md:flex">
+        <Button type="button" onClick={enviar} disabled={!podeEnviar}>
           Registrar vacinação
         </Button>
         <Button
@@ -212,6 +251,27 @@ export function AplicarLoteTela({
         >
           Cancelar
         </Button>
+      </div>
+
+      <div className="fixed inset-x-0 z-30 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden bottom-[calc(5.25rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-lg gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 flex-1 rounded-[10px]"
+            onClick={() => router.push("/sanidade/vacinas")}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            className="h-11 flex-[1.4] rounded-[10px]"
+            onClick={enviar}
+            disabled={!podeEnviar}
+          >
+            Registrar
+          </Button>
+        </div>
       </div>
     </div>
   );

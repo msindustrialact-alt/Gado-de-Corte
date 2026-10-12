@@ -32,7 +32,7 @@ export default async function PaginaProtocoloVacinas() {
       <header>
         <h1 className="text-2xl font-bold text-texto">Protocolo de vacinas</h1>
         <p className="mt-1 text-sm text-texto-suave">
-          Defina as vacinas obrigatórias do rebanho (Joana e Cataguá).
+          Catálogo e lista de referência do rebanho (Joana e Cataguá).
         </p>
       </header>
       <ProtocoloForm protocolo={protocolo} vacinasIniciais={vacinas} />

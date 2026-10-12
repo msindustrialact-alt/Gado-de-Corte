@@ -64,9 +64,7 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
     if (status) partes.push(LABELS_STATUS_VACINA[status]);
     if (vacinaNome) {
       partes.push(
-        vacinaModo === "com"
-          ? `com ${vacinaNome}`
-          : `sem ${vacinaNome}`,
+        vacinaModo === "com" ? `com ${vacinaNome}` : `sem ${vacinaNome}`,
       );
     }
     return partes.join(" · ") || "Todos os animais ativos";
@@ -82,13 +80,13 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="space-y-4 pb-36 md:pb-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/sanidade/vacinas"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
-            "h-9 rounded-[10px] px-2",
+            "h-9 w-fit rounded-[10px] px-2",
           )}
         >
           <ArrowLeft className="size-4" />
@@ -96,7 +94,7 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
         </Link>
         <Button
           type="button"
-          className="h-10 rounded-[10px] px-4"
+          className="hidden h-10 rounded-[10px] px-4 md:inline-flex"
           onClick={baixarPdf}
           disabled={linhas.length === 0}
         >
@@ -105,13 +103,13 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
         </Button>
       </div>
 
-      <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
+      <section className="rounded-[12px] border border-border bg-card p-3 shadow-card sm:p-4">
         <h2 className="text-sm font-semibold text-texto">Filtros</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block text-xs text-texto-suave">
             Lote
             <select
-              className="mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto"
+              className="mt-1 h-11 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto md:h-10"
               value={loteId}
               onChange={(e) => setLoteId(e.target.value)}
             >
@@ -127,7 +125,7 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
           <label className="block text-xs text-texto-suave">
             Status
             <select
-              className="mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto"
+              className="mt-1 h-11 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto md:h-10"
               value={status}
               onChange={(e) => setStatus(e.target.value as StatusFiltro)}
             >
@@ -141,7 +139,7 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
           <label className="block text-xs text-texto-suave">
             Vacina
             <select
-              className="mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto"
+              className="mt-1 h-11 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto md:h-10"
               value={vacinaId}
               onChange={(e) => setVacinaId(e.target.value)}
             >
@@ -157,7 +155,7 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
           <label className="block text-xs text-texto-suave">
             Cobertura da vacina
             <select
-              className="mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto"
+              className="mt-1 h-11 w-full rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto md:h-10"
               value={vacinaModo}
               onChange={(e) => setVacinaModo(e.target.value as "com" | "sem")}
               disabled={!vacinaId}
@@ -169,15 +167,15 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
         <Kpi rotulo="No filtro" valor={kpis.total} />
         <Kpi rotulo="Realizado" valor={kpis.realizado} />
         <Kpi rotulo="Pendente" valor={kpis.pendente} />
         <Kpi rotulo="Atrasado" valor={kpis.atrasado} />
       </div>
 
-      <section className="overflow-hidden rounded-[12px] border border-border bg-card shadow-card">
-        <div className="border-b border-border px-4 py-3">
+      <section className="rounded-[12px] border border-border bg-card shadow-card">
+        <div className="border-b border-border px-3 py-3 sm:px-4">
           <h2 className="text-sm font-semibold text-texto">Animais</h2>
           <p className="text-xs text-texto-suave">{resumoFiltros()}</p>
         </div>
@@ -187,69 +185,127 @@ export function RelatorioVacinasTela({ dados }: { dados: RelatorioVacinas }) {
             Nenhum animal com esses filtros.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="bg-muted/40 text-xs uppercase tracking-wide text-texto-suave">
-                <tr>
-                  <th className="px-3 py-2.5 font-medium">Brinco</th>
-                  <th className="px-3 py-2.5 font-medium">Nome</th>
-                  <th className="px-3 py-2.5 font-medium">Lote</th>
-                  <th className="px-3 py-2.5 font-medium">Status</th>
-                  <th className="px-3 py-2.5 font-medium">Última vacina</th>
-                  <th className="px-3 py-2.5 font-medium">Data</th>
-                  <th className="px-3 py-2.5 font-medium">Vacinas feitas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {linhas.map((linha) => (
-                  <tr
-                    key={linha.animal_id}
-                    className="border-t border-border/80 hover:bg-muted/20"
-                  >
-                    <td className="px-3 py-2.5">
-                      <Link
-                        href={`/animais/${linha.animal_id}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {linha.brinco}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2.5 text-texto">
-                      {linha.nome ?? "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-texto">{linha.lote_nome}</td>
-                    <td className="px-3 py-2.5">
-                      <StatusVacinaBadge status={linha.status} />
-                    </td>
-                    <td className="px-3 py-2.5 text-texto">
-                      {linha.ultima_vacina_nome ?? "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-texto-suave">
-                      {formatarData(linha.ultima_data)}
-                    </td>
-                    <td className="px-3 py-2.5 text-texto-suave">
-                      {linha.vacinas_feitas.length > 0
-                        ? linha.vacinas_feitas.join(" · ")
-                        : "—"}
-                    </td>
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead className="bg-muted/40 text-xs uppercase tracking-wide text-texto-suave">
+                  <tr>
+                    <th className="px-3 py-2.5 font-medium">Brinco</th>
+                    <th className="px-3 py-2.5 font-medium">Nome</th>
+                    <th className="px-3 py-2.5 font-medium">Lote</th>
+                    <th className="px-3 py-2.5 font-medium">Status</th>
+                    <th className="px-3 py-2.5 font-medium">Última vacina</th>
+                    <th className="px-3 py-2.5 font-medium">Data</th>
+                    <th className="px-3 py-2.5 font-medium">Vacinas feitas</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {linhas.map((linha) => (
+                    <tr
+                      key={linha.animal_id}
+                      className="border-t border-border/80 hover:bg-muted/20"
+                    >
+                      <td className="px-3 py-2.5">
+                        <Link
+                          href={`/animais/${linha.animal_id}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {linha.brinco}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2.5 text-texto">
+                        {linha.nome ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-texto">
+                        {linha.lote_nome}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <StatusVacinaBadge status={linha.status} />
+                      </td>
+                      <td className="px-3 py-2.5 text-texto">
+                        {linha.ultima_vacina_nome ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-texto-suave">
+                        {formatarData(linha.ultima_data)}
+                      </td>
+                      <td className="px-3 py-2.5 text-texto-suave">
+                        {linha.vacinas_feitas.length > 0
+                          ? linha.vacinas_feitas.join(" · ")
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col gap-2 p-3 md:hidden">
+              {linhas.map((linha) => (
+                <Link
+                  key={linha.animal_id}
+                  href={`/animais/${linha.animal_id}`}
+                  className="rounded-[12px] border border-border px-3 py-3 active:bg-muted/30"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-texto">
+                        {linha.brinco}
+                        {linha.nome ? (
+                          <span className="ml-1.5 font-normal text-texto-suave">
+                            {linha.nome}
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="mt-0.5 text-xs text-texto-suave">
+                        {linha.lote_nome}
+                      </p>
+                    </div>
+                    <StatusVacinaBadge status={linha.status} />
+                  </div>
+                  <p className="mt-2 text-xs text-texto">
+                    {linha.ultima_vacina_nome
+                      ? `${linha.ultima_vacina_nome} · ${formatarData(linha.ultima_data)}`
+                      : "Nenhuma vacina registrada"}
+                  </p>
+                  {linha.vacinas_feitas.length > 0 ? (
+                    <p className="mt-1 text-[11px] leading-relaxed text-texto-suave">
+                      {linha.vacinas_feitas.join(" · ")}
+                    </p>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </section>
+
+      <div className="fixed inset-x-0 z-30 border-t border-border bg-card/95 p-3 backdrop-blur md:hidden bottom-[calc(5.25rem+env(safe-area-inset-bottom))]">
+        <Button
+          type="button"
+          className="h-11 w-full rounded-[10px]"
+          onClick={baixarPdf}
+          disabled={linhas.length === 0}
+        >
+          <FileDown className="size-4" />
+          Baixar PDF
+        </Button>
+      </div>
     </div>
   );
 }
 
 function Kpi({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
-    <div className="rounded-[12px] border border-border bg-card px-3 py-3 shadow-card">
-      <p className="text-xs text-texto-suave">{rotulo}</p>
-      <p className="mt-1 text-xl font-semibold text-texto">
+    <article
+      className={cn(
+        "flex h-auto min-h-[72px] flex-col justify-center rounded-[12px] border border-border bg-card px-2.5 py-2 shadow-card",
+        "lg:min-h-[88px] lg:px-3",
+      )}
+    >
+      <p className="truncate text-[10px] text-texto-suave lg:text-xs">{rotulo}</p>
+      <p className="truncate text-[16px] font-bold text-texto lg:text-xl">
         {formatarInteiro(valor)}
       </p>
-    </div>
+    </article>
   );
 }
