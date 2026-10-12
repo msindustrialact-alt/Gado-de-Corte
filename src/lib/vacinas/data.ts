@@ -54,6 +54,7 @@ export type SessaoResumo = {
   lote_nome: string;
   qtd_animais_lote: number | null;
   qtd_aplicados: number | null;
+  vacinas_nomes: string[];
 };
 
 type Resultado =
@@ -661,7 +662,30 @@ export async function getSessoesRecentes(limit = 8): Promise<SessaoResumo[]> {
     return [];
   }
 
-  return (data ?? []).map((linha) => {
+  const sessoes = data ?? [];
+  if (sessoes.length === 0) {
+    return [];
+  }
+
+  const ids = sessoes.map((s) => s.id);
+  const { data: apps } = await supabase
+    .from("vacinacao_aplicacoes")
+    .select("sessao_id, vacina:vacinas ( nome )")
+    .eq("fazenda_id", fazenda.id)
+    .in("sessao_id", ids)
+    .is("deleted_at", null);
+
+  const vacinasPorSessao = new Map<string, Set<string>>();
+  for (const app of apps ?? []) {
+    if (!app.sessao_id) continue;
+    const vacina = Array.isArray(app.vacina) ? app.vacina[0] : app.vacina;
+    const nome = vacina?.nome ?? "Vacina";
+    const set = vacinasPorSessao.get(app.sessao_id) ?? new Set<string>();
+    set.add(nome);
+    vacinasPorSessao.set(app.sessao_id, set);
+  }
+
+  return sessoes.map((linha) => {
     const lote = Array.isArray(linha.lote) ? linha.lote[0] : linha.lote;
     return {
       id: linha.id,
@@ -670,6 +694,9 @@ export async function getSessoesRecentes(limit = 8): Promise<SessaoResumo[]> {
       lote_nome: lote?.nome ?? "Lote",
       qtd_animais_lote: linha.qtd_animais_lote,
       qtd_aplicados: linha.qtd_aplicados,
+      vacinas_nomes: [...(vacinasPorSessao.get(linha.id) ?? [])].sort((a, b) =>
+        a.localeCompare(b, "pt-BR"),
+      ),
     };
   });
 }

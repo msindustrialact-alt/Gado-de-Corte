@@ -139,10 +139,17 @@ export function VacinasHub({
                 key={sessao.id}
                 className="flex justify-between gap-2 text-sm text-texto"
               >
-                <span>
-                  {sessao.lote_nome} · {sessao.qtd_aplicados ?? 0} animais
-                </span>
-                <span className="text-texto-suave">
+                <div className="min-w-0">
+                  <p>
+                    {sessao.lote_nome} · {sessao.qtd_aplicados ?? 0} animais
+                  </p>
+                  <p className="text-xs text-texto-suave">
+                    {sessao.vacinas_nomes.length > 0
+                      ? sessao.vacinas_nomes.join(" · ")
+                      : "Vacinas não identificadas"}
+                  </p>
+                </div>
+                <span className="shrink-0 text-texto-suave">
                   {formatarData(sessao.data)}
                 </span>
               </li>
