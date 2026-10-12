@@ -41,6 +41,15 @@ export function VacinasHub({
           Aplicar no lote
         </Link>
         <Link
+          href="/sanidade/vacinas/relatorio"
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-10 rounded-[10px] px-4",
+          )}
+        >
+          Relatório PDF
+        </Link>
+        <Link
           href="/sanidade/vacinas/protocolo"
           className={cn(
             buttonVariants({ variant: "outline" }),

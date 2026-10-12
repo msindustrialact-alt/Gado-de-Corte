@@ -710,3 +710,133 @@ export async function getLotesComVacinaPendente() {
     }))
     .filter((lote) => lote.qtd_pendentes > 0);
 }
+
+export type LinhaRelatorioVacina = {
+  animal_id: string;
+  brinco: string;
+  nome: string | null;
+  lote_id: string | null;
+  lote_nome: string;
+  status: StatusVacinaAnimal;
+  ultima_data: string | null;
+  ultima_vacina_nome: string | null;
+  vacinas_feitas: string[];
+};
+
+export type RelatorioVacinas = {
+  fazenda_nome: string;
+  gerado_em: string;
+  linhas: LinhaRelatorioVacina[];
+  lotes: Array<{ id: string; nome: string }>;
+  vacinas: Array<{ id: string; nome: string }>;
+  kpis: {
+    realizado: number;
+    pendente: number;
+    atrasado: number;
+    total: number;
+  };
+};
+
+export async function getRelatorioVacinas(): Promise<RelatorioVacinas> {
+  const fazenda = await exigirFazenda();
+  const supabase = await createClient();
+  const catalogo = await getVacinas(true);
+  const nomesVacina = new Map(catalogo.map((v) => [v.id, v.nome]));
+  const itens: ItemProtocoloVacina[] = catalogo.map((vacina) => ({
+    vacina_id: vacina.id,
+    vacina_nome: vacina.nome,
+    obrigatoria: false,
+    idade_minima_dias: null,
+    intervalo_dias: vacina.intervalo_dias,
+  }));
+  const hoje = hojeISO();
+
+  const [{ data: animais }, { data: realizacoes }, { data: lotes }] =
+    await Promise.all([
+      supabase
+        .from("animais")
+        .select("id, brinco, nome, data_nascimento, lote_id")
+        .eq("fazenda_id", fazenda.id)
+        .eq("status", "ativo")
+        .is("deleted_at", null)
+        .order("brinco"),
+      supabase
+        .from("vacinacao_aplicacoes")
+        .select("animal_id, vacina_id, data")
+        .eq("fazenda_id", fazenda.id)
+        .is("deleted_at", null),
+      supabase
+        .from("lotes")
+        .select("id, nome")
+        .eq("fazenda_id", fazenda.id)
+        .eq("status", "ativo")
+        .is("deleted_at", null)
+        .order("nome"),
+    ]);
+
+  const porAnimalApps = new Map<
+    string,
+    Array<{ vacina_id: string; data: string }>
+  >();
+  for (const linha of realizacoes ?? []) {
+    const lista = porAnimalApps.get(linha.animal_id) ?? [];
+    lista.push({ vacina_id: linha.vacina_id, data: linha.data });
+    porAnimalApps.set(linha.animal_id, lista);
+  }
+
+  const nomesLote = new Map((lotes ?? []).map((l) => [l.id, l.nome]));
+
+  const linhas: LinhaRelatorioVacina[] = (animais ?? []).map((animal) => {
+    const apps = porAnimalApps.get(animal.id) ?? [];
+    const avaliacao = avaliarStatusAnimal({
+      hoje,
+      itensProtocolo: itens,
+      realizacoes: apps,
+    });
+
+    let ultima_data: string | null = null;
+    let ultima_vacina_id: string | null = null;
+    const feitas = new Set<string>();
+
+    for (const app of apps) {
+      const nome = nomesVacina.get(app.vacina_id) ?? "Vacina";
+      feitas.add(nome);
+      if (!ultima_data || app.data > ultima_data) {
+        ultima_data = app.data;
+        ultima_vacina_id = app.vacina_id;
+      }
+    }
+
+    return {
+      animal_id: animal.id,
+      brinco: animal.brinco,
+      nome: animal.nome,
+      lote_id: animal.lote_id,
+      lote_nome: animal.lote_id
+        ? (nomesLote.get(animal.lote_id) ?? "Lote")
+        : "Sem lote",
+      status: avaliacao.status,
+      ultima_data,
+      ultima_vacina_nome: ultima_vacina_id
+        ? (nomesVacina.get(ultima_vacina_id) ?? "Vacina")
+        : null,
+      vacinas_feitas: [...feitas].sort((a, b) => a.localeCompare(b, "pt-BR")),
+    };
+  });
+
+  const kpis = {
+    realizado: linhas.filter((l) => l.status === "em_dia").length,
+    pendente: linhas.filter((l) => l.status === "incompleto").length,
+    atrasado: linhas.filter((l) => l.status === "atrasado").length,
+    total: linhas.length,
+  };
+
+  return {
+    fazenda_nome: fazenda.nome,
+    gerado_em: hoje,
+    linhas,
+    lotes: (lotes ?? []).map((l) => ({ id: l.id, nome: l.nome })),
+    vacinas: catalogo.map((v) => ({ id: v.id, nome: v.nome })),
+    kpis,
+  };
+}
