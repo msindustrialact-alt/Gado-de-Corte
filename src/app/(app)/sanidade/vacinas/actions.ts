@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { falhaValidacao, type ResultadoAcao } from "@/lib/acao";
 import {
+  aplicarProtocoloPadraoRj,
   arquivarVacina,
   criarSessaoVacinacao,
   getAnimaisAtivosDoLote,
@@ -66,6 +67,20 @@ export async function salvarProtocoloAction(
 
   revalidarVacinas();
   return { ok: true, id: resultado.id, message: "Protocolo salvo." };
+}
+
+export async function aplicarProtocoloPadraoRjAction(): Promise<ResultadoAcao> {
+  const resultado = await aplicarProtocoloPadraoRj();
+  if (!resultado.ok) {
+    return { ok: false, message: resultado.message };
+  }
+
+  revalidarVacinas();
+  return {
+    ok: true,
+    id: resultado.id,
+    message: "Protocolo padrão RJ aplicado.",
+  };
 }
 
 export async function listarAnimaisDoLoteAction(

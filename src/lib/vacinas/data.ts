@@ -9,6 +9,10 @@ import {
   type StatusVacinaAnimal,
 } from "@/lib/vacinas";
 import type { AplicarLoteInput, ProtocoloInput, VacinaInput } from "@/lib/vacinas/schema";
+import {
+  NOME_PROTOCOLO_PADRAO_RJ,
+  VACINAS_PROTOCOLO_PADRAO_RJ,
+} from "@/lib/vacinas/protocolo-padrao-rj";
 import { textoDoErro } from "@/lib/acao";
 import { parseNumeroPt } from "@/lib/animais";
 
@@ -287,6 +291,79 @@ export async function salvarProtocolo(input: ProtocoloInput): Promise<Resultado>
   }
 
   return { ok: true, id: protocoloId ?? undefined };
+}
+
+/** Cria/atualiza catálogo + protocolo ativo com o padrão RJ. */
+export async function aplicarProtocoloPadraoRj(): Promise<Resultado> {
+  const existentes = await getVacinas(false);
+
+  const aliasNome = (nome: string) => {
+    const n = nome.trim().toLowerCase();
+    if (n === "raiva" || n === "raiva dos herbívoros") {
+      return "raiva";
+    }
+    if (n.includes("brucelose")) return "brucelose";
+    if (n.includes("clostridio")) return "clostridioses";
+    if (n.includes("ibr") || n.includes("bvd")) return "ibr_bvd";
+    if (n.includes("lepto")) return "leptospirose";
+    return n;
+  };
+
+  const porAlias = new Map<string, Vacina>();
+  for (const vacina of existentes) {
+    porAlias.set(aliasNome(vacina.nome), vacina);
+  }
+
+  const itens: ProtocoloInput["itens"] = [];
+
+  for (const padrao of VACINAS_PROTOCOLO_PADRAO_RJ) {
+    const chave = aliasNome(padrao.nome);
+    const atual = porAlias.get(chave);
+
+    const resultado = await upsertVacina({
+      id: atual?.id ?? "",
+      nome: padrao.nome,
+      intervalo_dias:
+        padrao.intervalo_dias != null ? String(padrao.intervalo_dias) : "",
+      observacoes: padrao.observacoes,
+      ativa: true,
+    });
+
+    if (!resultado.ok || !resultado.id) {
+      return {
+        ok: false,
+        message: resultado.ok
+          ? "Falha ao gravar vacina do protocolo."
+          : resultado.message,
+      };
+    }
+
+    porAlias.set(chave, {
+      id: resultado.id,
+      nome: padrao.nome,
+      intervalo_dias: padrao.intervalo_dias,
+      ativa: true,
+      observacoes: padrao.observacoes,
+    });
+
+    itens.push({
+      vacina_id: resultado.id,
+      obrigatoria: padrao.obrigatoria,
+      idade_minima_dias:
+        padrao.idade_minima_dias != null
+          ? String(padrao.idade_minima_dias)
+          : "",
+      ordem: padrao.ordem,
+    });
+  }
+
+  const protocoloAtivo = await getProtocoloAtivo();
+
+  return salvarProtocolo({
+    id: protocoloAtivo?.id ?? "",
+    nome: NOME_PROTOCOLO_PADRAO_RJ,
+    itens,
+  });
 }
 
 export async function getAnimaisAtivosDoLote(

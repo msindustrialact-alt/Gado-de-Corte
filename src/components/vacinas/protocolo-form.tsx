@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import {
+  aplicarProtocoloPadraoRjAction,
   arquivarVacinaAction,
   salvarProtocoloAction,
   salvarVacinaAction,
@@ -13,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ProtocoloComItens, Vacina } from "@/lib/vacinas/data";
+import { NOME_PROTOCOLO_PADRAO_RJ } from "@/lib/vacinas/protocolo-padrao-rj";
 
 type ItemLocal = {
   vacina_id: string;
@@ -118,10 +120,43 @@ export function ProtocoloForm({
     });
   }
 
+  function carregarPadraoRj() {
+    startTransition(async () => {
+      const resultado = await aplicarProtocoloPadraoRjAction();
+      if (!resultado.ok) {
+        toast.error(
+          resultado.message ?? "Não foi possível aplicar o protocolo padrão.",
+        );
+        return;
+      }
+
+      toast.success(resultado.message ?? "Protocolo padrão RJ aplicado.");
+      router.refresh();
+    });
+  }
+
   return (
     <div className="space-y-4">
       <section className="rounded-[12px] border border-border bg-card p-4 shadow-card">
-        <h2 className="text-sm font-semibold text-texto">Protocolo ativo</h2>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-texto">Protocolo ativo</h2>
+            <p className="mt-1 max-w-xl text-xs text-texto-suave">
+              Pode carregar o calendário de referência ({NOME_PROTOCOLO_PADRAO_RJ}
+              ): idades em dias + reforço anual. Reforço de 30 dias na
+              primovacinação e Brucelose só fêmeas ficam nas observações.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 shrink-0 rounded-[10px]"
+            onClick={carregarPadraoRj}
+            disabled={pendente}
+          >
+            Carregar padrão RJ
+          </Button>
+        </div>
         <label className="mt-3 block">
           <span className="mb-1 block text-xs text-texto-suave">Nome</span>
           <Input
