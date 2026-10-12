@@ -93,26 +93,31 @@ export function avaliarStatusAnimal(params: {
   let temIntervaloVencido = false;
 
   for (const item of obrigatorias) {
+    const ultima = ultimas.get(item.vacina_id) ?? null;
+
     if (item.idade_minima_dias != null) {
       if (!params.dataNascimento) {
-        temSemNascimento = true;
-        faltantes.push({
-          vacina_id: item.vacina_id,
-          vacina_nome: item.vacina_nome,
-          motivo: "sem_nascimento",
-          ultima_data: null,
-          proxima_prevista: null,
-        });
-        continue;
-      }
-
-      const idadeDias = diasEntre(params.dataNascimento, params.hoje);
-      if (idadeDias < item.idade_minima_dias) {
-        continue;
+        // Sem nascimento: se já aplicou, segue pelo intervalo; se não, falta
+        // com aviso (não bloqueia o animal inteiro como "indefinido" cego).
+        if (!ultima) {
+          temSemNascimento = true;
+          temNunca = true;
+          faltantes.push({
+            vacina_id: item.vacina_id,
+            vacina_nome: item.vacina_nome,
+            motivo: "sem_nascimento",
+            ultima_data: null,
+            proxima_prevista: null,
+          });
+          continue;
+        }
+      } else {
+        const idadeDias = diasEntre(params.dataNascimento, params.hoje);
+        if (idadeDias < item.idade_minima_dias) {
+          continue;
+        }
       }
     }
-
-    const ultima = ultimas.get(item.vacina_id) ?? null;
 
     if (!ultima) {
       temNunca = true;
@@ -141,12 +146,13 @@ export function avaliarStatusAnimal(params: {
     }
   }
 
-  if (temSemNascimento) {
-    return { status: "indefinido", faltantes };
-  }
-
+  // Incompleto é mais acionável que indefinido quando falta dose.
   if (temNunca) {
     return { status: "incompleto", faltantes };
+  }
+
+  if (temSemNascimento) {
+    return { status: "indefinido", faltantes };
   }
 
   if (temIntervaloVencido) {
