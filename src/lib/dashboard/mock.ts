@@ -51,6 +51,7 @@ export type TipoOcorrencia =
   | "entrada"
   | "pesagem"
   | "vacinacao"
+  | "medicacao"
   | "tratamento"
   | "dieta";
 

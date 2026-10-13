@@ -38,7 +38,7 @@ export const ITENS_NAV: ItemNav[] = [
     icone: "sanidade",
     filhos: [
       { titulo: "Vacinas", href: "/sanidade/vacinas" },
-      { titulo: "Vermífugos", href: "/sanidade/vermifugos" },
+      { titulo: "Medicações", href: "/sanidade/medicacoes" },
       { titulo: "Tratamentos", href: "/sanidade/tratamentos" },
     ],
   },

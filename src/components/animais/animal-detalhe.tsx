@@ -35,6 +35,12 @@ import {
   type DesempenhoAnimal,
 } from "@/lib/pesagens";
 import type { AvaliacaoVacinaAnimal } from "@/lib/vacinas";
+import {
+  LABELS_VIA,
+  dataLiberacao,
+  textoCarencia,
+  type HistoricoMedicacao,
+} from "@/lib/medicacoes/tipos";
 import { formatarData, formatarMoeda } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +49,7 @@ export function AnimalDetalhe({
   desempenho,
   avaliacaoVacinas,
   historicoVacinas,
+  historicoMedicacoes,
 }: {
   animal: AnimalDetalhe;
   desempenho: DesempenhoAnimal;
@@ -53,6 +60,7 @@ export function AnimalDetalhe({
     vacina_id: string;
     vacina_nome: string;
   }>;
+  historicoMedicacoes: HistoricoMedicacao[];
 }) {
   const idade = formatIdade(
     animal.data_nascimento,
@@ -379,6 +387,56 @@ export function AnimalDetalhe({
           >
             Ver vacinas
           </Link>
+        )}
+      </section>
+
+      <section className="rounded-[16px] border border-border bg-card p-4 shadow-card md:p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold tracking-wide text-texto">
+            Medicações
+          </h2>
+          <Link
+            href={`/sanidade/medicacoes/registrar?animal=${animal.id}${animal.lote?.id ? `&lote=${animal.lote.id}` : ""}`}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-9 rounded-[10px]",
+            )}
+          >
+            Registrar
+          </Link>
+        </div>
+        {historicoMedicacoes.length === 0 ? (
+          <p className="text-sm text-texto-suave">
+            Nenhuma medicação registrada para este animal.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border rounded-[12px] border border-border">
+            {historicoMedicacoes.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
+              >
+                <span className="min-w-0">
+                  <span className="block font-medium text-texto">
+                    {item.medicamento_nome}
+                  </span>
+                  <span className="text-xs text-texto-suave">
+                    {LABELS_VIA[item.via]}
+                    {" · "}
+                    {item.dose ?? "Dose não informada"}
+                    {" · "}
+                    {textoCarencia(item.carencia_dias)}
+                    {item.carencia_dias != null && item.carencia_dias > 0
+                      ? ` · abate a partir de ${formatarData(dataLiberacao(item.data, item.carencia_dias))}`
+                      : ""}
+                  </span>
+                </span>
+                <span className="shrink-0 text-texto-suave">
+                  {formatarData(item.data)}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

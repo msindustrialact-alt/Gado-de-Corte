@@ -1111,6 +1111,207 @@ export type Database = {
           },
         ]
       }
+      medicamentos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          created_by: string | null
+          carencia_dias: number | null
+          deleted_at: string | null
+          dose: string | null
+          fazenda_id: string
+          id: string
+          nome: string
+          updated_at: string
+          via: string
+        }
+        Insert: {
+          ativo?: boolean
+          carencia_dias?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id: string
+          id?: string
+          nome: string
+          updated_at?: string
+          via: string
+        }
+        Update: {
+          ativo?: boolean
+          carencia_dias?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicamentos_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicacao_sessoes: {
+        Row: {
+          carencia_dias: number | null
+          created_at: string
+          created_by: string | null
+          data: string
+          deleted_at: string | null
+          dose: string | null
+          fazenda_id: string
+          id: string
+          lote_id: string | null
+          medicamento_id: string
+          observacoes: string | null
+          qtd_aplicados: number | null
+          updated_at: string
+        }
+        Insert: {
+          carencia_dias?: number | null
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id: string
+          id?: string
+          lote_id?: string | null
+          medicamento_id: string
+          observacoes?: string | null
+          qtd_aplicados?: number | null
+          updated_at?: string
+        }
+        Update: {
+          carencia_dias?: number | null
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id?: string
+          id?: string
+          lote_id?: string | null
+          medicamento_id?: string
+          observacoes?: string | null
+          qtd_aplicados?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicacao_sessoes_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_sessoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_sessoes_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicacao_aplicacoes: {
+        Row: {
+          animal_id: string
+          carencia_dias: number | null
+          created_at: string
+          data: string
+          deleted_at: string | null
+          dose: string | null
+          fazenda_id: string
+          id: string
+          lote_id: string | null
+          medicamento_id: string
+          sessao_id: string
+          updated_at: string
+        }
+        Insert: {
+          animal_id: string
+          carencia_dias?: number | null
+          created_at?: string
+          data?: string
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id: string
+          id?: string
+          lote_id?: string | null
+          medicamento_id: string
+          sessao_id: string
+          updated_at?: string
+        }
+        Update: {
+          animal_id?: string
+          carencia_dias?: number | null
+          created_at?: string
+          data?: string
+          deleted_at?: string | null
+          dose?: string | null
+          fazenda_id?: string
+          id?: string
+          lote_id?: string | null
+          medicamento_id?: string
+          sessao_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicacao_aplicacoes_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_aplicacoes_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_aplicacoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_aplicacoes_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medicacao_aplicacoes_sessao_id_fkey"
+            columns: ["sessao_id"]
+            isOneToOne: false
+            referencedRelation: "medicacao_sessoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       vw_custos_lote_insumos: {

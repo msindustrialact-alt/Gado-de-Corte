@@ -12,6 +12,7 @@ import {
   type RebanhoFazenda,
 } from "@/lib/dashboard/mock";
 import { getFazendaAtiva } from "@/lib/fazenda";
+import { getSessoesMedicacao } from "@/lib/medicacoes/data";
 import { getIndicadoresPesagem, getLotesAtrasadosPesagem } from "@/lib/pesagens/data";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -385,7 +386,7 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
   }
 
   const supabase = await createClient();
-  const [{ data, error }, sessoesVacina] = await Promise.all([
+  const [{ data, error }, sessoesVacina, sessoesMedicacao] = await Promise.all([
     supabase
       .from("vw_pesagens_resumo")
       .select("id, lote_nome, qtd_pesados, data, status")
@@ -394,6 +395,7 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
       .order("data", { ascending: false })
       .limit(8),
     getSessoesRecentes(8),
+    getSessoesMedicacao(),
   ]);
 
   if (error) {
@@ -429,7 +431,16 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
     href: "/sanidade/vacinas",
   }));
 
-  return [...pesagens, ...vacinacoes]
+  const medicacoes: Ocorrencia[] = sessoesMedicacao.slice(0, 8).map((sessao) => ({
+    id: `medicacao-${sessao.id}`,
+    titulo: "Medicação registrada",
+    subtitulo: `${sessao.medicamento_nome} · ${sessao.lote_nome ?? "Sem lote"} · ${sessao.qtd_aplicados ?? 0} animais`,
+    data: new Date(`${sessao.data}T00:00:00`),
+    tipo: "medicacao" as const,
+    href: "/sanidade/medicacoes",
+  }));
+
+  return [...pesagens, ...vacinacoes, ...medicacoes]
     .sort((a, b) => b.data.getTime() - a.data.getTime())
     .slice(0, 8);
 }
