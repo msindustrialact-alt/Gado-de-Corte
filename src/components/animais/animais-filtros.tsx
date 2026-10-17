@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  FILTROS_PADRAO,
   OPCOES_CATEGORIA,
   OPCOES_PROPRIEDADE,
   OPCOES_SEXO,
@@ -24,6 +24,10 @@ import {
   type FiltrosAnimais,
   type OpcaoFiltro,
 } from "@/lib/animais";
+import { gravarFazendaPainel } from "@/lib/fazenda-painel";
+import { cn } from "@/lib/utils";
+
+const CHAVE_FILTROS_ABERTOS = "fazenda-joana:animais-filtros-abertos";
 
 type Props = {
   filtros: FiltrosAnimais;
@@ -32,13 +36,43 @@ type Props = {
   piquetes: OpcaoFiltro[];
 };
 
+function filtrosDoPainel(filtros: FiltrosAnimais) {
+  let quantidade = 0;
+
+  if (filtros.propriedade !== "todas") quantidade += 1;
+  if (filtros.status !== "ativo") quantidade += 1;
+  if (filtros.sexo !== "todos") quantidade += 1;
+  if (filtros.categoria !== "todos") quantidade += 1;
+  if (filtros.racaId) quantidade += 1;
+  if (filtros.loteId) quantidade += 1;
+  if (filtros.piqueteId) quantidade += 1;
+
+  return quantidade;
+}
+
 export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
   const router = useRouter();
   const [busca, setBusca] = useState(filtros.q);
+  const [aberto, setAberto] = useState(true);
+  const quantidadeFiltros = filtrosDoPainel(filtros);
 
   useEffect(() => {
     setBusca(filtros.q);
   }, [filtros.q]);
+
+  useEffect(() => {
+    if (localStorage.getItem(CHAVE_FILTROS_ABERTOS) === "0") {
+      setAberto(false);
+    }
+  }, []);
+
+  function alternarPainel() {
+    setAberto((atual) => {
+      const proximo = !atual;
+      localStorage.setItem(CHAVE_FILTROS_ABERTOS, proximo ? "1" : "0");
+      return proximo;
+    });
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -55,7 +89,15 @@ export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
   }, [busca, filtros, router]);
 
   function atualizar(patch: Partial<FiltrosAnimais>) {
+    if (patch.propriedade) {
+      gravarFazendaPainel(patch.propriedade);
+    }
+
     router.push(urlAnimais(filtros, patch));
+  }
+
+  function limpar() {
+    router.push(urlAnimais({ ...FILTROS_PADRAO, propriedade: filtros.propriedade }));
   }
 
   const campos = (
@@ -85,10 +127,32 @@ export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
               className="h-10 rounded-[10px] border-border bg-bg-app pr-3 pl-10 shadow-none"
             />
           </label>
+          <button
+            type="button"
+            aria-expanded={aberto}
+            onClick={alternarPainel}
+            className="hidden h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-card px-3 text-sm font-medium text-texto md:inline-flex"
+          >
+            <SlidersHorizontal className="size-4" />
+            Filtros
+            {quantidadeFiltros > 0 ? (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-primary-foreground">
+                {quantidadeFiltros}
+              </span>
+            ) : null}
+            <ChevronDown
+              className={cn("size-4 transition-transform", aberto && "rotate-180")}
+            />
+          </button>
           <Sheet>
             <SheetTrigger className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-card px-3 text-sm font-medium text-texto md:hidden">
               <SlidersHorizontal className="size-4" />
               Filtros
+              {quantidadeFiltros > 0 ? (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-primary-foreground">
+                  {quantidadeFiltros}
+                </span>
+              ) : null}
             </SheetTrigger>
             <SheetContent side="right" className="w-[min(100%,24rem)] p-0">
               <SheetHeader className="border-b border-border">
@@ -100,10 +164,10 @@ export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
               <div className="flex flex-col gap-3 overflow-y-auto p-4">
                 {campos}
                 <Button
-                  nativeButton={false}
+                  type="button"
                   variant="outline"
                   className="mt-2"
-                  render={<Link href="/animais" />}
+                  onClick={limpar}
                 >
                   <X />
                   Limpar filtros
@@ -113,14 +177,18 @@ export function AnimaisFiltros({ filtros, racas, lotes, piquetes }: Props) {
           </Sheet>
         </div>
 
-        <div className="hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-4">
+        <div
+          className={
+            aberto ? "hidden gap-3 md:grid md:grid-cols-3 xl:grid-cols-4" : "hidden"
+          }
+        >
           {campos}
           <div className="flex items-end">
             <Button
-              nativeButton={false}
+              type="button"
               variant="outline"
               className="h-9 w-full rounded-[10px]"
-              render={<Link href="/animais" />}
+              onClick={limpar}
             >
               <X />
               Limpar filtros

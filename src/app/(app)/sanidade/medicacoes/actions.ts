@@ -23,7 +23,8 @@ function validarCadastro(dados: {
   via: string;
   dose: string;
   carenciaDias: number;
-}): { ok: true; via: ViaMedicamento } | { ok: false; message: string } {
+  produtoId: string;
+}): { ok: true; via: ViaMedicamento; produtoId: string | null } | { ok: false; message: string } {
   if (dados.nome.trim().length < 2) {
     return { ok: false, message: "Informe o nome do medicamento." };
   }
@@ -47,7 +48,11 @@ function validarCadastro(dados: {
     };
   }
 
-  return { ok: true, via: dados.via as ViaMedicamento };
+  return {
+    ok: true,
+    via: dados.via as ViaMedicamento,
+    produtoId: dados.produtoId || null,
+  };
 }
 
 export async function cadastrarMedicamentoAction(dados: {
@@ -55,6 +60,7 @@ export async function cadastrarMedicamentoAction(dados: {
   via: string;
   dose: string;
   carenciaDias: number;
+  produtoId: string;
 }): Promise<{ ok: true } | { ok: false; message: string }> {
   const validado = validarCadastro(dados);
 
@@ -67,6 +73,7 @@ export async function cadastrarMedicamentoAction(dados: {
     via: validado.via,
     dose: dados.dose,
     carenciaDias: dados.carenciaDias,
+    produtoId: validado.produtoId,
   });
 
   if (resultado.ok) {
@@ -82,6 +89,7 @@ export async function atualizarMedicamentoAction(dados: {
   via: string;
   dose: string;
   carenciaDias: number;
+  produtoId: string;
 }): Promise<{ ok: true } | { ok: false; message: string }> {
   const validado = validarCadastro(dados);
 
@@ -94,6 +102,7 @@ export async function atualizarMedicamentoAction(dados: {
     via: validado.via,
     dose: dados.dose,
     carenciaDias: dados.carenciaDias,
+    produtoId: validado.produtoId,
   });
 
   if (resultado.ok) {
@@ -111,6 +120,7 @@ export async function registrarMedicacaoAction(dados: {
   animalIds: string[];
   observacoes: string;
   dose: string;
+  mlTotal: string;
 }): Promise<
   | { ok: true; quantidade: number; ignorados: number }
   | { ok: false; message: string }
@@ -123,15 +133,26 @@ export async function registrarMedicacaoAction(dados: {
     return { ok: false, message: "Escolha o medicamento." };
   }
 
+    const mlTexto = dados.mlTotal.trim().replace(",", ".");
+    const mlTotal = mlTexto === "" ? null : Number(mlTexto);
+
+    if (mlTotal != null && (!Number.isFinite(mlTotal) || mlTotal <= 0)) {
+      return { ok: false, message: "Informe os mL usados ou deixe o campo vazio." };
+    }
+
     const resultado = await registrarMedicacao({
       ...dados,
       dose: dados.dose ?? "",
+      mlTotal,
     });
 
   if (resultado.ok) {
     revalidatePath("/sanidade/medicacoes");
     revalidatePath("/animais");
     revalidatePath("/dashboard");
+    revalidatePath("/estoque");
+    revalidatePath("/alimentacao");
+    revalidatePath("/lucratividade");
     for (const id of dados.animalIds) {
       revalidatePath(`/animais/${id}`);
     }

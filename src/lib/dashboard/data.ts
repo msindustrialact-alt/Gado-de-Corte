@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 
-import { mesesDeIdade } from "@/lib/animais";
+import { mesesDeIdade, type PropriedadeAnimal } from "@/lib/animais";
 import {
   type DesempenhoLote,
   type FatiaRebanho,
@@ -11,6 +11,7 @@ import {
   type ProximoManejo,
   type RebanhoFazenda,
 } from "@/lib/dashboard/mock";
+import type { CategoriaCusto } from "@/lib/custos-periodo/calculo";
 import { getFazendaAtiva } from "@/lib/fazenda";
 import { getSessoesMedicacao } from "@/lib/medicacoes/data";
 import { getIndicadoresPesagem, getLotesAtrasadosPesagem } from "@/lib/pesagens/data";
@@ -30,6 +31,41 @@ export type {
   RebanhoFazenda,
 };
 
+function pertenceAoLote(loteId: string | null | undefined, loteIds: string[] | null) {
+  if (!loteIds) {
+    return true;
+  }
+
+  return loteId != null && loteIds.includes(loteId);
+}
+
+export async function getIdsLotesDaPropriedade(
+  propriedade: PropriedadeAnimal,
+): Promise<string[]> {
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("animais")
+    .select("lote_id")
+    .eq("fazenda_id", fazenda.id)
+    .eq("propriedade", propriedade)
+    .eq("status", "ativo")
+    .is("deleted_at", null)
+    .not("lote_id", "is", null);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return [...new Set((data ?? []).flatMap((animal) => (animal.lote_id ? [animal.lote_id] : [])))];
+}
+
 const CORES_DISTRIBUICAO = {
   macho_0_12: "#146C3B",
   macho_12_24: "#3DB37E",
@@ -40,29 +76,44 @@ const CORES_DISTRIBUICAO = {
   sem_idade: "#B0B0B0",
 } as const;
 
-export async function getKpis(): Promise<Kpi[]> {
+export async function getKpis(
+  propriedade: PropriedadeAnimal | null = null,
+  loteIds: string[] | null = null,
+): Promise<Kpi[]> {
   const fazenda = await getFazendaAtiva();
   const supabase = await createClient();
   const fazendaId = fazenda?.id;
+  let consultaAnimais = fazendaId
+    ? supabase
+        .from("animais")
+        .select("id", { count: "exact", head: true })
+        .eq("fazenda_id", fazendaId)
+        .eq("status", "ativo")
+        .is("deleted_at", null)
+    : null;
+  let consultaLotes = fazendaId
+    ? supabase
+        .from("lotes")
+        .select("id", { count: "exact", head: true })
+        .eq("fazenda_id", fazendaId)
+        .eq("status", "ativo")
+        .is("deleted_at", null)
+    : null;
+
+  if (consultaAnimais && propriedade) {
+    consultaAnimais = consultaAnimais.eq("propriedade", propriedade);
+  }
+
+  if (consultaLotes && loteIds) {
+    consultaLotes = loteIds.length === 0 ? null : consultaLotes.in("id", loteIds);
+  }
 
   const [{ count: animais }, { count: lotes }, indicadores] = await Promise.all([
-    fazendaId
-      ? supabase
-          .from("animais")
-          .select("id", { count: "exact", head: true })
-          .eq("fazenda_id", fazendaId)
-          .eq("status", "ativo")
-          .is("deleted_at", null)
-      : Promise.resolve({ count: 0 }),
-    fazendaId
-      ? supabase
-          .from("lotes")
-          .select("id", { count: "exact", head: true })
-          .eq("fazenda_id", fazendaId)
-          .eq("status", "ativo")
-          .is("deleted_at", null)
-      : Promise.resolve({ count: 0 }),
-    getIndicadoresPesagem(),
+    consultaAnimais ?? Promise.resolve({ count: 0 }),
+    consultaLotes ?? Promise.resolve({ count: 0 }),
+    getIndicadoresPesagem(
+      propriedade && loteIds ? { propriedade, loteIds } : undefined,
+    ),
   ]);
 
   return [
@@ -117,21 +168,29 @@ export async function getKpis(): Promise<Kpi[]> {
   ];
 }
 
-export async function getEvolucaoPeso(): Promise<PontoEvolucaoPeso[]> {
+export async function getEvolucaoPeso(
+  loteIds: string[] | null = null,
+): Promise<PontoEvolucaoPeso[]> {
   const fazenda = await getFazendaAtiva();
 
-  if (!fazenda) {
+  if (!fazenda || loteIds?.length === 0) {
     return [];
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let consulta = supabase
     .from("vw_pesagens_resumo")
     .select("data, peso_medio, status")
     .eq("fazenda_id", fazenda.id)
     .eq("status", "concluida")
     .is("deleted_at", null)
     .order("data", { ascending: true });
+
+  if (loteIds) {
+    consulta = consulta.in("lote_id", loteIds);
+  }
+
+  const { data, error } = await consulta;
 
   if (error) {
     console.error(error);
@@ -164,21 +223,29 @@ export async function getEvolucaoPeso(): Promise<PontoEvolucaoPeso[]> {
     }));
 }
 
-export async function getDesempenhoLotes(): Promise<DesempenhoLote[]> {
+export async function getDesempenhoLotes(
+  loteIds: string[] | null = null,
+): Promise<DesempenhoLote[]> {
   const fazenda = await getFazendaAtiva();
 
-  if (!fazenda) {
+  if (!fazenda || loteIds?.length === 0) {
     return [];
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let consulta = supabase
     .from("vw_pesagens_resumo")
     .select("lote_id, lote_nome, gmd_medio, data, status")
     .eq("fazenda_id", fazenda.id)
     .eq("status", "concluida")
     .is("deleted_at", null)
     .order("data", { ascending: false });
+
+  if (loteIds) {
+    consulta = consulta.in("lote_id", loteIds);
+  }
+
+  const { data, error } = await consulta;
 
   if (error) {
     console.error(error);
@@ -211,11 +278,16 @@ export async function getDesempenhoLotes(): Promise<DesempenhoLote[]> {
   return lotes.sort((a, b) => b.ganhoKgDia - a.ganhoKgDia);
 }
 
-export async function getProximosManejos(): Promise<ProximoManejo[]> {
+export async function getProximosManejos(
+  loteIds: string[] | null = null,
+): Promise<ProximoManejo[]> {
   const fazenda = await getFazendaAtiva();
-  const atrasados = await getLotesAtrasadosPesagem();
+  const atrasadosTodos = await getLotesAtrasadosPesagem();
+  const atrasados = atrasadosTodos.filter((lote) => pertenceAoLote(lote.id, loteIds));
   const vacinasPendentes = fazenda
-    ? await getLotesComVacinaPendente()
+    ? (await getLotesComVacinaPendente()).filter((lote) =>
+        pertenceAoLote(lote.lote_id, loteIds),
+      )
     : [];
   const agora = new Date();
 
@@ -260,7 +332,9 @@ export async function getProximosManejos(): Promise<ProximoManejo[]> {
   return mistos;
 }
 
-export async function getDistribuicaoRebanho(): Promise<FatiaRebanho[]> {
+export async function getDistribuicaoRebanho(
+  propriedade: PropriedadeAnimal | null = null,
+): Promise<FatiaRebanho[]> {
   const fazenda = await getFazendaAtiva();
 
   if (!fazenda) {
@@ -268,12 +342,18 @@ export async function getDistribuicaoRebanho(): Promise<FatiaRebanho[]> {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let consulta = supabase
     .from("animais")
     .select("sexo, data_nascimento")
     .eq("fazenda_id", fazenda.id)
     .eq("status", "ativo")
     .is("deleted_at", null);
+
+  if (propriedade) {
+    consulta = consulta.eq("propriedade", propriedade);
+  }
+
+  const { data, error } = await consulta;
 
   if (error) {
     console.error(error);
@@ -378,7 +458,9 @@ export async function getDistribuicaoRebanho(): Promise<FatiaRebanho[]> {
   return fatias;
 }
 
-export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
+export async function getUltimasOcorrencias(
+  loteIds: string[] | null = null,
+): Promise<Ocorrencia[]> {
   const fazenda = await getFazendaAtiva();
 
   if (!fazenda) {
@@ -386,15 +468,21 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
   }
 
   const supabase = await createClient();
+  let consultaPesagens = supabase
+    .from("vw_pesagens_resumo")
+    .select("id, lote_id, lote_nome, qtd_pesados, data, status")
+    .eq("fazenda_id", fazenda.id)
+    .is("deleted_at", null)
+    .order("data", { ascending: false })
+    .limit(8);
+
+  if (loteIds && loteIds.length > 0) {
+    consultaPesagens = consultaPesagens.in("lote_id", loteIds);
+  }
+
   const [{ data, error }, sessoesVacina, sessoesMedicacao] = await Promise.all([
-    supabase
-      .from("vw_pesagens_resumo")
-      .select("id, lote_nome, qtd_pesados, data, status")
-      .eq("fazenda_id", fazenda.id)
-      .is("deleted_at", null)
-      .order("data", { ascending: false })
-      .limit(8),
-    getSessoesRecentes(8),
+    loteIds?.length === 0 ? Promise.resolve({ data: [], error: null }) : consultaPesagens,
+    getSessoesRecentes(loteIds ? 40 : 8),
     getSessoesMedicacao(),
   ]);
 
@@ -422,7 +510,9 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
     ];
   });
 
-  const vacinacoes: Ocorrencia[] = sessoesVacina.map((sessao) => ({
+  const vacinacoes: Ocorrencia[] = sessoesVacina
+    .filter((sessao) => pertenceAoLote(sessao.lote_id, loteIds))
+    .map((sessao) => ({
     id: `vacina-${sessao.id}`,
     titulo: "Vacinação realizada",
     subtitulo: `${sessao.lote_nome} · ${sessao.qtd_aplicados} animais`,
@@ -431,7 +521,10 @@ export async function getUltimasOcorrencias(): Promise<Ocorrencia[]> {
     href: "/sanidade/vacinas",
   }));
 
-  const medicacoes: Ocorrencia[] = sessoesMedicacao.slice(0, 8).map((sessao) => ({
+  const medicacoes: Ocorrencia[] = sessoesMedicacao
+    .filter((sessao) => pertenceAoLote(sessao.lote_id, loteIds))
+    .slice(0, 8)
+    .map((sessao) => ({
     id: `medicacao-${sessao.id}`,
     titulo: "Medicação registrada",
     subtitulo: `${sessao.medicamento_nome} · ${sessao.lote_nome ?? "Sem lote"} · ${sessao.qtd_aplicados ?? 0} animais`,
@@ -488,4 +581,80 @@ export async function getRebanhoPorFazenda(): Promise<RebanhoFazenda[]> {
       percentual: total === 0 ? 0 : Math.round((catagua / total) * 100),
     },
   ];
+}
+
+export type PesagemCustoCard = {
+  id: string;
+  loteId: string;
+  loteNome: string;
+  data: string;
+  custo: number | null;
+  ganhoKg: number | null;
+  fotos: { categoria: CategoriaCusto; valor: number }[];
+};
+
+export async function getPesagensCustoCard(loteIds: string[] | null = null): Promise<{
+  pesagens: PesagemCustoCard[];
+  lotes: { id: string; nome: string }[];
+}> {
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return { pesagens: [], lotes: [] };
+  }
+
+  const supabase = await createClient();
+  const [{ data: pesagens }, { data: lotes }, { data: fotos }] = await Promise.all([
+    supabase
+      .from("vw_pesagens_resumo")
+      .select("id, lote_id, lote_nome, data, status, ganho_total_kg, custo_alimentacao")
+      .eq("fazenda_id", fazenda.id)
+      .eq("status", "concluida")
+      .is("deleted_at", null),
+    supabase
+      .from("lotes")
+      .select("id, nome")
+      .eq("fazenda_id", fazenda.id)
+      .eq("status", "ativo")
+      .is("deleted_at", null)
+      .order("nome"),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("pesagem_custo_itens")
+      .select("pesagem_id, categoria, valor_snapshot")
+      .eq("fazenda_id", fazenda.id),
+  ]);
+
+  const fotosPorPesagem = new Map<string, PesagemCustoCard["fotos"]>();
+
+  for (const foto of fotos ?? []) {
+    const lista = fotosPorPesagem.get(foto.pesagem_id) ?? [];
+    const categoria =
+      foto.categoria === "sanidade" || foto.categoria === "outro"
+        ? foto.categoria
+        : "alimentacao";
+    lista.push({ categoria, valor: Number(foto.valor_snapshot) });
+    fotosPorPesagem.set(foto.pesagem_id, lista);
+  }
+
+  return {
+    lotes: (lotes ?? []).filter((lote) => pertenceAoLote(lote.id, loteIds)),
+    pesagens: (pesagens ?? []).flatMap((item) => {
+      if (!item.id || !item.lote_id || !item.data || !pertenceAoLote(item.lote_id, loteIds)) {
+        return [];
+      }
+
+      return [
+        {
+          id: item.id,
+          loteId: item.lote_id,
+          loteNome: item.lote_nome ?? "Lote",
+          data: item.data,
+          custo: item.custo_alimentacao,
+          ganhoKg: item.ganho_total_kg,
+          fotos: fotosPorPesagem.get(item.id) ?? [],
+        },
+      ];
+    }),
+  };
 }

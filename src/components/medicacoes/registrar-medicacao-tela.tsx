@@ -38,6 +38,7 @@ export function RegistrarMedicacaoTela({
   const [pendente, iniciar] = useTransition();
   const [medicamentoId, setMedicamentoId] = useState(medicamentos[0]?.id ?? "");
   const [dose, setDose] = useState(medicamentos[0]?.dose ?? "");
+  const [ml, setMl] = useState("");
   const [loteId, setLoteId] = useState(loteInicial);
   const [data, setData] = useState(hojeISO());
   const [observacoes, setObservacoes] = useState("");
@@ -68,6 +69,7 @@ export function RegistrarMedicacaoTela({
         animalIds,
         observacoes,
         dose,
+        mlTotal: ml,
       });
 
       if (!resultado.ok) {
@@ -147,7 +149,7 @@ export function RegistrarMedicacaoTela({
           Cadastre um medicamento antes de registrar o manejo.
         </p>
       ) : (
-        <section className="grid gap-3 rounded-[12px] border border-border bg-card p-3 shadow-card sm:grid-cols-[1.4fr_1fr] sm:p-4">
+        <section className="grid gap-3 rounded-[12px] border border-border bg-card p-3 shadow-card sm:grid-cols-3 sm:p-4">
           <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-texto-suave">
               Dose deste manejo
@@ -157,6 +159,18 @@ export function RegistrarMedicacaoTela({
               onChange={(evento) => setDose(evento.target.value)}
               className="h-11 md:h-10"
               placeholder="Ex.: 1 ml para cada 50 kg"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-texto-suave">
+              mL usados neste manejo
+            </span>
+            <Input
+              inputMode="decimal"
+              value={ml}
+              onChange={(evento) => setMl(evento.target.value)}
+              className="h-11 md:h-10"
+              placeholder="Vazio se não baixar estoque"
             />
           </label>
           <div className="flex flex-col justify-center gap-1">

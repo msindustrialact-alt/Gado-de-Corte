@@ -22,7 +22,8 @@ import {
   reabrirPesagem,
   salvarPesagem,
 } from "@/app/(app)/pesagens/actions";
-import { CampoMoeda } from "@/components/animais/campo-moeda";
+import { CampoMoeda, formatarMoedaValor } from "@/components/animais/campo-moeda";
+import { CustosPeriodoDialog } from "@/components/pesagens/custos-periodo-dialog";
 import { CLASSE_CAMPO } from "@/components/animais/segmented-control";
 import { CardResumo } from "@/components/layout/card-resumo";
 import { LucratividadeProjecaoPainel } from "@/components/lucratividade/lucratividade-projecao-painel";
@@ -484,13 +485,23 @@ export function PesagemSessaoTela({
       </div>
 
       <section className="grid gap-4 rounded-[12px] border border-border bg-card p-4 shadow-card md:grid-cols-2">
-        <CampoMoeda
-          id="custo_alimentacao"
-          rotulo="Custo da alimentação no período"
-          valor={custo}
-          desabilitado={somenteLeitura}
-          onChange={setCusto}
-        />
+        <div className="space-y-2">
+          <CampoMoeda
+            id="custo_alimentacao"
+            rotulo="Custo do período"
+            valor={custo}
+            desabilitado={somenteLeitura}
+            onChange={setCusto}
+          />
+          <CustosPeriodoDialog
+            pesagemId={cabecalho.id}
+            desabilitado={somenteLeitura}
+            onAplicado={(total) => setCusto(formatarMoedaValor(total))}
+          />
+          <p className="text-xs text-texto-suave">
+            A @ produzida usa este valor. Você ainda pode ajustar o número depois.
+          </p>
+        </div>
         <div>
           <Label htmlFor="condicao_pesagem" className="mb-1.5 text-sm text-texto">
             Condição da pesagem

@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
+import { AnimaisCategorias } from "@/components/animais/animais-categorias";
 import { AnimaisFiltros } from "@/components/animais/animais-filtros";
 import { AnimaisPaginacao } from "@/components/animais/animais-paginacao";
 import { AnimaisSelecao } from "@/components/animais/animais-selecao";
 import { AnimaisVazio } from "@/components/animais/animais-vazio";
 import { buttonVariants } from "@/components/ui/button";
 import { lerFiltrosAnimais } from "@/lib/animais";
+import { lerFazendaPainelAtual } from "@/lib/fazenda-painel-servidor";
 import {
   getIdsAnimaisFiltrados,
   getListaAnimais,
   getOpcoesFiltroAnimais,
+  getResumoCategorias,
 } from "@/lib/animais/data";
 import { formatarInteiro } from "@/lib/formatacao";
 import { cn } from "@/lib/utils";
@@ -26,12 +29,20 @@ type Props = {
 
 export default async function PaginaAnimais({ searchParams }: Props) {
   const params = await searchParams;
-  const filtros = lerFiltrosAnimais(params);
-  const [{ animais, totalFiltrado, totalCadastrados, de, ate }, opcoes, idsFiltrados] =
+  const filtrosLidos = lerFiltrosAnimais(params);
+  const fazendaSalva = params.fazenda
+    ? filtrosLidos.propriedade
+    : await lerFazendaPainelAtual(undefined);
+  const filtros =
+    fazendaSalva === "todas" || params.fazenda
+      ? filtrosLidos
+      : { ...filtrosLidos, propriedade: fazendaSalva };
+  const [{ animais, totalFiltrado, totalCadastrados, de, ate }, opcoes, idsFiltrados, categorias] =
     await Promise.all([
       getListaAnimais(filtros),
       getOpcoesFiltroAnimais(),
       getIdsAnimaisFiltrados(filtros),
+      getResumoCategorias(filtros),
     ]);
 
   const subtitulo =
@@ -64,6 +75,8 @@ export default async function PaginaAnimais({ searchParams }: Props) {
         lotes={opcoes.lotes}
         piquetes={opcoes.piquetes}
       />
+
+      <AnimaisCategorias itens={categorias} filtros={filtros} />
 
       {animais.length === 0 ? (
         <AnimaisVazio />

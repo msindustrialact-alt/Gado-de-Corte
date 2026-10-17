@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { lerCookieFazendaPainel } from "@/lib/fazenda-painel";
 
 export function BuscaCabecalho() {
   const router = useRouter();
@@ -27,7 +28,24 @@ export function BuscaCabecalho() {
   function enviarBusca(evento?: FormEvent<HTMLFormElement>) {
     evento?.preventDefault();
     const q = busca.trim();
-    router.push(q ? `/animais?q=${encodeURIComponent(q)}` : "/animais");
+    const params = new URLSearchParams();
+
+    if (q) {
+      params.set("q", q);
+    }
+
+    const fazendaUrl = searchParams.get("fazenda");
+    const fazenda =
+      fazendaUrl === "joana" || fazendaUrl === "catagua"
+        ? fazendaUrl
+        : lerCookieFazendaPainel();
+
+    if (fazenda !== "todas") {
+      params.set("fazenda", fazenda);
+    }
+
+    const consulta = params.toString();
+    router.push(consulta ? `/animais?${consulta}` : "/animais");
   }
 
   return (

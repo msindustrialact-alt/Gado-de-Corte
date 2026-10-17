@@ -50,6 +50,7 @@ export function AnimalDetalhe({
   avaliacaoVacinas,
   historicoVacinas,
   historicoMedicacoes,
+  vendaAbate,
 }: {
   animal: AnimalDetalhe;
   desempenho: DesempenhoAnimal;
@@ -61,6 +62,7 @@ export function AnimalDetalhe({
     vacina_nome: string;
   }>;
   historicoMedicacoes: HistoricoMedicacao[];
+  vendaAbate: { id: string; data: string; compradorNome: string } | null;
 }) {
   const idade = formatIdade(
     animal.data_nascimento,
@@ -454,6 +456,16 @@ export function AnimalDetalhe({
           <Campo rotulo="Data" valor={formatarData(animal.data_saida)} />
           <Campo rotulo="Destino" valor={textoOuTraco(animal.destino)} />
           <Campo rotulo="Peso saída" valor={formatPeso(animal.peso_saida)} />
+          {vendaAbate ? (
+            <Campo
+              rotulo="Receita"
+              valor={
+                <Link href={`/financeiro/receitas/${vendaAbate.id}`} className="underline">
+                  {formatarData(vendaAbate.data)} · {vendaAbate.compradorNome}
+                </Link>
+              }
+            />
+          ) : null}
           <Campo
             rotulo="Valor venda"
             valor={

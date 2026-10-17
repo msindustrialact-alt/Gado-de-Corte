@@ -19,7 +19,7 @@ export type LoteLucratividadeBase = {
   peso_entrada_medio: number | null;
   peso_atual_medio: number | null;
   custo_aquisicao_total: number;
-  /** Soma de custo_alimentacao das pesagens concluídas + lançamentos de alimentação. */
+  /** Lançamentos de alimentação e outros. O custo da pesagem não entra de novo. */
   custo_suplementacao_ate_hoje: number;
   /** Soma dos lançamentos de sanidade do lote. */
   custo_sanidade_ate_hoje: number;

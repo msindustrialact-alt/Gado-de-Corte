@@ -1,11 +1,13 @@
 import { getFazendaAtiva } from "@/lib/fazenda";
 import { createClient } from "@/lib/supabase/server";
 import {
+  CATEGORIAS_VALIDAS,
   ITENS_POR_PAGINA,
   rotuloParente,
   sanitizarBusca,
   type AnimalDetalhe,
   type AnimalListagem,
+  type CategoriaAnimal,
   type FiltrosAnimais,
   type OpcaoFiltro,
   type ParenteAnimal,
@@ -331,6 +333,119 @@ export async function getListaAnimais(
     de: totalFiltrado === 0 ? 0 : de + 1,
     ate: Math.min(ate + 1, totalFiltrado),
   };
+}
+
+export type ResumoCategoria = {
+  categoria: CategoriaAnimal;
+  quantidade: number;
+  pesoMedio: number | null;
+};
+
+export async function getResumoCategorias(
+  filtros: FiltrosAnimais,
+): Promise<ResumoCategoria[]> {
+  const fazenda = await getFazendaAtiva();
+
+  if (!fazenda) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const busca = sanitizarBusca(filtros.q);
+  let consulta = supabase
+    .from("animais")
+    .select("categoria, peso_atual")
+    .eq("fazenda_id", fazenda.id)
+    .is("deleted_at", null);
+
+  if (filtros.status !== "todos") {
+    consulta = consulta.eq("status", filtros.status);
+  }
+
+  if (filtros.sexo !== "todos") {
+    consulta = consulta.eq("sexo", filtros.sexo);
+  }
+
+  if (filtros.racaId) {
+    consulta = consulta.eq("raca_id", filtros.racaId);
+  }
+
+  if (filtros.loteId) {
+    consulta = consulta.eq("lote_id", filtros.loteId);
+  }
+
+  if (filtros.piqueteId) {
+    consulta = consulta.eq("piquete_id", filtros.piqueteId);
+  }
+
+  if (filtros.propriedade !== "todas") {
+    consulta = consulta.eq("propriedade", filtros.propriedade);
+  }
+
+  if (busca) {
+    const { data: lotesEncontrados } = await supabase
+      .from("lotes")
+      .select("id")
+      .eq("fazenda_id", fazenda.id)
+      .is("deleted_at", null)
+      .ilike("nome", `%${busca}%`);
+
+    const idsLote = (lotesEncontrados ?? []).map((lote) => lote.id).filter(Boolean);
+    const partes = [
+      `brinco.ilike.%${busca}%`,
+      `nome.ilike.%${busca}%`,
+      `brinco_eletronico.ilike.%${busca}%`,
+      `sisbov.ilike.%${busca}%`,
+    ];
+
+    if (idsLote.length > 0) {
+      partes.push(`lote_id.in.(${idsLote.join(",")})`);
+    }
+
+    consulta = consulta.or(partes.join(","));
+  }
+
+  const { data, error } = await consulta;
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  const grupos = new Map<CategoriaAnimal, { quantidade: number; soma: number; comPeso: number }>();
+
+  for (const linha of data ?? []) {
+    if (!linha.categoria || !CATEGORIAS_VALIDAS.includes(linha.categoria)) {
+      continue;
+    }
+
+    const atual = grupos.get(linha.categoria) ?? { quantidade: 0, soma: 0, comPeso: 0 };
+    atual.quantidade += 1;
+    const peso = linha.peso_atual == null ? null : Number(linha.peso_atual);
+
+    if (peso != null && Number.isFinite(peso)) {
+      atual.soma += peso;
+      atual.comPeso += 1;
+    }
+
+    grupos.set(linha.categoria, atual);
+  }
+
+  return CATEGORIAS_VALIDAS.flatMap((categoria) => {
+    const grupo = grupos.get(categoria);
+
+    if (!grupo || grupo.quantidade === 0) {
+      return [];
+    }
+
+    return [
+      {
+        categoria,
+        quantidade: grupo.quantidade,
+        pesoMedio: grupo.comPeso > 0 ? grupo.soma / grupo.comPeso : null,
+      },
+    ];
+  });
 }
 
 export async function getIdsAnimaisFiltrados(

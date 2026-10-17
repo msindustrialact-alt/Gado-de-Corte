@@ -4,16 +4,20 @@ import { Suspense } from "react";
 import { Bell, Menu, Search } from "lucide-react";
 
 import { BuscaCabecalho } from "@/components/layout/busca-cabecalho";
+import { SeletorFazenda } from "@/components/layout/seletor-fazenda";
 import type { DadosUsuario } from "@/components/layout/types";
+import type { FazendaPainel } from "@/lib/fazenda-painel";
 import { MenuUsuario } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function Cabecalho({
   usuario,
+  fazenda,
   onMenu,
 }: {
   usuario: DadosUsuario;
+  fazenda: FazendaPainel;
   onMenu: () => void;
 }) {
   return (
@@ -29,9 +33,12 @@ export function Cabecalho({
         <Menu className="size-5" />
       </Button>
 
-      <Suspense fallback={<BuscaCabecalhoFallback />}>
-        <BuscaCabecalho />
-      </Suspense>
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <Suspense fallback={<BuscaCabecalhoFallback fazenda={fazenda} />}>
+          <BuscaCabecalho />
+          <SeletorFazenda inicial={fazenda} />
+        </Suspense>
+      </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-2 md:gap-3">
         <Button
@@ -53,8 +60,9 @@ export function Cabecalho({
   );
 }
 
-function BuscaCabecalhoFallback() {
+function BuscaCabecalhoFallback({ fazenda }: { fazenda: FazendaPainel }) {
   return (
+    <>
     <div className="relative min-w-0 flex-1 max-w-[470px]">
       <Input
         type="search"
@@ -66,5 +74,9 @@ function BuscaCabecalhoFallback() {
         <Search className="size-4" aria-hidden />
       </span>
     </div>
+    <span className="inline-flex h-[42px] w-[104px] shrink-0 items-center rounded-[10px] border border-[#E4E9E6] bg-[#F1F4F2] px-2 text-sm text-texto sm:w-[124px]">
+      {fazenda === "joana" ? "Joana" : fazenda === "catagua" ? "Cataguá" : "Todas"}
+    </span>
+    </>
   );
 }

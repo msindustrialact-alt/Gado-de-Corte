@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 
-import { hojeISO } from "@/lib/animais";
+import { hojeISO, type PropriedadeAnimal } from "@/lib/animais";
+import { custoArrobaPonderado } from "@/lib/custos-periodo/calculo";
 import { getFazendaAtiva } from "@/lib/fazenda";
 import {
   calcularGmd,
@@ -682,7 +683,10 @@ export async function getLotesAtrasadosPesagem(): Promise<
     .slice(0, 5);
 }
 
-export async function getIndicadoresPesagem(): Promise<{
+export async function getIndicadoresPesagem(filtro?: {
+  propriedade: PropriedadeAnimal;
+  loteIds: string[];
+}): Promise<{
   pesagensMes: number;
   gmdMedio: number | null;
   pesoMedio: number | null;
@@ -707,44 +711,49 @@ export async function getIndicadoresPesagem(): Promise<{
   const [ano, mes] = hoje.split("-");
   const inicioIso = `${ano}-${mes}-01`;
 
-  const [{ data: pesagens }, { data: animais }, atrasados] = await Promise.all([
-    supabase
-      .from("vw_pesagens_resumo")
-      .select("data, status, gmd_medio, ganho_total_kg, custo_alimentacao, peso_medio, custo_por_arroba")
-      .eq("fazenda_id", fazenda.id)
-      .is("deleted_at", null),
-    supabase
-      .from("animais")
-      .select("peso_atual")
-      .eq("fazenda_id", fazenda.id)
-      .eq("status", "ativo")
-      .is("deleted_at", null),
+  let consultaPesagens = supabase
+    .from("vw_pesagens_resumo")
+    .select("data, status, gmd_medio, ganho_total_kg, custo_alimentacao, peso_medio, custo_por_arroba")
+    .eq("fazenda_id", fazenda.id)
+    .is("deleted_at", null);
+  let consultaAnimais = supabase
+    .from("animais")
+    .select("peso_atual")
+    .eq("fazenda_id", fazenda.id)
+    .eq("status", "ativo")
+    .is("deleted_at", null);
+
+  if (filtro) {
+    consultaAnimais = consultaAnimais.eq("propriedade", filtro.propriedade);
+  }
+
+  const pesagensPromise =
+    filtro && filtro.loteIds.length === 0
+      ? Promise.resolve({ data: null })
+      : filtro
+        ? consultaPesagens.in("lote_id", filtro.loteIds)
+        : consultaPesagens;
+
+  const [{ data: pesagens }, { data: animais }, atrasadosTodos] = await Promise.all([
+    pesagensPromise,
+    consultaAnimais,
     getLotesAtrasadosPesagem(),
   ]);
+  const atrasados = filtro
+    ? atrasadosTodos.filter((lote) => filtro.loteIds.includes(lote.id))
+    : atrasadosTodos;
 
   const concluidas = (pesagens ?? []).filter((item) => item.status === "concluida");
   const doMes = concluidas.filter((item) => (item.data ?? "") >= inicioIso);
   const gmds = concluidas
     .map((item) => numeroOuNulo(item.gmd_medio))
     .filter((valor): valor is number => valor != null);
-  const custos = concluidas.flatMap((item) => {
-    const direto = numeroOuNulo(
-      (item as { custo_por_arroba?: number | null }).custo_por_arroba,
-    );
-
-    if (direto != null) {
-      return [direto];
-    }
-
-    const custo = numeroOuNulo(item.custo_alimentacao);
-    const ganho = numeroOuNulo(item.ganho_total_kg);
-
-    if (custo == null || ganho == null || ganho <= 0) {
-      return [];
-    }
-
-    return [custo / kgParaArroba(ganho)];
-  });
+  const custoArroba = custoArrobaPonderado(
+    concluidas.map((item) => ({
+      custo: numeroOuNulo(item.custo_alimentacao),
+      ganhoKg: numeroOuNulo(item.ganho_total_kg),
+    })),
+  );
   const pesos = (animais ?? [])
     .map((item) => numeroOuNulo(item.peso_atual))
     .filter((valor): valor is number => valor != null);
@@ -753,7 +762,7 @@ export async function getIndicadoresPesagem(): Promise<{
     pesagensMes: doMes.length,
     gmdMedio: media(gmds),
     pesoMedio: media(pesos),
-    custoArroba: media(custos),
+    custoArroba,
     lotesAtrasados: atrasados.length,
   };
 }

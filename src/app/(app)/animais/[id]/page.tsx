@@ -10,6 +10,7 @@ import {
   getHistoricoAnimalVacinas,
 } from "@/lib/vacinas/data";
 import { getHistoricoAnimalMedicacoes } from "@/lib/medicacoes/data";
+import { getVendaAbateDoAnimal } from "@/lib/receitas/data";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -29,13 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PaginaAnimal({ params }: Props) {
   const { id } = await params;
-  const [animal, desempenho, avaliacaoVacinas, historicoVacinas, historicoMedicacoes] =
+  const [animal, desempenho, avaliacaoVacinas, historicoVacinas, historicoMedicacoes, vendaAbate] =
     await Promise.all([
       getAnimalPorId(id),
       getHistoricoAnimal(id),
       getAvaliacaoAnimal(id),
       getHistoricoAnimalVacinas(id),
       getHistoricoAnimalMedicacoes(id),
+      getVendaAbateDoAnimal(id),
     ]);
 
   if (!animal) {
@@ -70,6 +72,7 @@ export default async function PaginaAnimal({ params }: Props) {
       avaliacaoVacinas={avaliacaoVacinas}
       historicoVacinas={historicoVacinas}
       historicoMedicacoes={historicoMedicacoes}
+      vendaAbate={vendaAbate}
     />
   );
 }

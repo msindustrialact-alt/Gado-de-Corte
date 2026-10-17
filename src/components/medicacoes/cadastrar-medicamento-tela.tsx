@@ -25,12 +25,15 @@ const vazio = {
   via: "injetavel" as ViaMedicamento,
   dose: "",
   carencia: "",
+  produtoId: "",
 };
 
 export function CadastrarMedicamentoTela({
   medicamentos,
+  produtosMl,
 }: {
   medicamentos: Medicamento[];
+  produtosMl: { id: string; nome: string; estoque_atual: number; custo_medio: number }[];
 }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -43,6 +46,7 @@ export function CadastrarMedicamentoTela({
       via: item.via,
       dose: item.dose ?? "",
       carencia: item.carencia_dias == null ? "" : String(item.carencia_dias),
+      produtoId: item.produto_id ?? "",
     });
   }
 
@@ -60,6 +64,7 @@ export function CadastrarMedicamentoTela({
         via: form.via,
         dose: form.dose,
         carenciaDias,
+        produtoId: form.produtoId,
       };
       const resultado = form.id
         ? await atualizarMedicamentoAction({ id: form.id, ...dados })
@@ -125,6 +130,30 @@ export function CadastrarMedicamentoTela({
             className="h-11 md:h-10"
             placeholder="0 se não houver"
           />
+        </label>
+        <label className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-xs font-medium text-texto-suave">
+            Produto no estoque (mL)
+          </span>
+          <select
+            value={form.produtoId}
+            onChange={(evento) =>
+              setForm((atual) => ({ ...atual, produtoId: evento.target.value }))
+            }
+            className="h-11 rounded-[10px] border border-border bg-card px-2.5 text-sm text-texto outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:h-10"
+          >
+            <option value="">Sem baixa de estoque</option>
+            {produtosMl.map((produto) => (
+              <option key={produto.id} value={produto.id}>
+                {produto.nome} — {produto.estoque_atual} mL ·{" "}
+                {produto.custo_medio.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+                /mL
+              </option>
+            ))}
+          </select>
         </label>
         <label className="flex flex-col gap-1 sm:col-span-2">
           <span className="text-xs font-medium text-texto-suave">Dose</span>

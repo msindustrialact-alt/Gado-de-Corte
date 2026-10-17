@@ -1,13 +1,26 @@
 import { CircleDollarSign, Layers, ArrowDown, ArrowUp, TrendingUp, Weight } from "lucide-react";
 
+import { CardCustoArroba } from "@/components/dashboard/card-custo-arroba";
 import { IconeBoi } from "@/components/icons/icone-boi";
+import type { PesagemCustoCard } from "@/lib/dashboard/data";
 import type { IconeKpi, Kpi } from "@/lib/dashboard/mock";
 import { formatarDecimal, formatarInteiro, formatarMoeda } from "@/lib/formatacao";
 
-export function KpisDashboard({ kpis }: { kpis: Kpi[] }) {
+export function KpisDashboard({
+  kpis,
+  pesagensCusto,
+  lotes,
+}: {
+  kpis: Kpi[];
+  pesagensCusto: PesagemCustoCard[];
+  lotes: { id: string; nome: string }[];
+}) {
   return (
     <div className="grid grid-cols-6 gap-2 lg:grid-cols-5 lg:gap-3">
-      {kpis.map((kpi, indice) => (
+      {kpis.map((kpi, indice) =>
+        kpi.id === "custo" ? (
+          <CardCustoArroba key={kpi.id} pesagens={pesagensCusto} lotes={lotes} />
+        ) : (
         <article
           key={kpi.id}
           className={`flex h-auto min-h-[88px] flex-col items-start gap-1.5 rounded-[12px] border border-border bg-card px-2 py-2 shadow-card sm:flex-row sm:items-center sm:gap-2.5 sm:px-3 lg:col-span-1 lg:h-[112px] lg:min-h-0 lg:flex-row lg:items-center lg:gap-2.5 lg:px-3 lg:py-0 2xl:gap-3.5 2xl:px-3.5 ${
@@ -43,7 +56,8 @@ export function KpisDashboard({ kpis }: { kpis: Kpi[] }) {
             )}
           </div>
         </article>
-      ))}
+        ),
+      )}
     </div>
   );
 }

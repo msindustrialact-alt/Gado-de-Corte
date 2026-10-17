@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { CadastrarMedicamentoTela } from "@/components/medicacoes/cadastrar-medicamento-tela";
 import { buttonVariants } from "@/components/ui/button";
+import { getProdutos } from "@/lib/estoque/data";
 import { getMedicamentos } from "@/lib/medicacoes/data";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PaginaCadastrarMedicamento() {
-  const medicamentos = await getMedicamentos();
+  const [medicamentos, produtos] = await Promise.all([
+    getMedicamentos(),
+    getProdutos(),
+  ]);
+  const produtosMl = produtos.filter(
+    (produto) => produto.unidade.trim().toLowerCase() === "ml",
+  );
 
   return (
     <div className="space-y-4 p-4 md:p-6">
@@ -32,7 +39,7 @@ export default async function PaginaCadastrarMedicamento() {
           Qualquer produto entra aqui, com a dose e a carência de abate. O estoque não muda.
         </p>
       </header>
-      <CadastrarMedicamentoTela medicamentos={medicamentos} />
+      <CadastrarMedicamentoTela medicamentos={medicamentos} produtosMl={produtosMl} />
     </div>
   );
 }

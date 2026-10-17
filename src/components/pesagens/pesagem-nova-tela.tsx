@@ -144,7 +144,7 @@ export function PesagemNovaTela({
 
         <CampoMoeda
           id="custo_alimentacao"
-          rotulo="Custo da alimentação no período (opcional)"
+          rotulo="Custo do período (opcional)"
           valor={watch("custo_alimentacao")}
           erro={errors.custo_alimentacao?.message}
           onChange={(valor) =>
@@ -152,8 +152,7 @@ export function PesagemNovaTela({
           }
         />
         <p className="-mt-2 text-xs text-texto-suave">
-          Soma da dieta entre esta pesagem e a anterior. Serve para calcular o
-          custo por arroba estimada produzida (rendimento 50%).
+          Na sessão dá para buscar suplementação, medicamentos e outros entre as pesagens.
         </p>
 
         <div>

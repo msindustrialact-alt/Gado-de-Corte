@@ -6,6 +6,7 @@ export type Medicamento = {
   via: ViaMedicamento;
   dose: string | null;
   carencia_dias: number | null;
+  produto_id: string | null;
   ativo: boolean;
 };
 
@@ -13,6 +14,7 @@ export type AnimalMedicacao = {
   id: string;
   brinco: string;
   nome: string | null;
+  lote_id: string | null;
 };
 
 export type SessaoMedicacao = {
@@ -24,6 +26,7 @@ export type SessaoMedicacao = {
   via: ViaMedicamento;
   dose: string | null;
   carencia_dias: number | null;
+  lote_id: string | null;
   lote_nome: string | null;
 };
 
@@ -43,6 +46,7 @@ export type RegistroMedicacao = {
   animalIds: string[];
   observacoes: string;
   dose: string;
+  mlTotal: number | null;
 };
 
 export type CadastroMedicamento = {
@@ -50,6 +54,7 @@ export type CadastroMedicamento = {
   via: ViaMedicamento;
   dose: string;
   carenciaDias: number;
+  produtoId: string | null;
 };
 
 export const VIAS_MEDICAMENTO: ViaMedicamento[] = [

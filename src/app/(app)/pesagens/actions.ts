@@ -8,6 +8,11 @@ import {
   vazioParaNulo,
   type ResultadoAcao,
 } from "@/lib/acao";
+import {
+  consultarCustosPeriodo,
+  gravarCustosPeriodo,
+} from "@/lib/custos-periodo/data";
+import type { LinhaCustoPeriodo } from "@/lib/custos-periodo/calculo";
 import { getFazendaAtiva } from "@/lib/fazenda";
 import {
   desempenhoDaLinha,
@@ -29,6 +34,7 @@ function revalidarPesagens(ids?: { pesagem?: string; lote?: string; animais?: st
   revalidatePath("/dashboard");
   revalidatePath("/animais");
   revalidatePath("/lotes");
+  revalidatePath("/lucratividade");
 
   if (ids?.pesagem) {
     revalidatePath(`/pesagens/${ids.pesagem}`);
@@ -416,4 +422,50 @@ export async function arquivarPesagem(id: string): Promise<ResultadoAcao> {
   });
 
   return { ok: true, message: "Pesagem arquivada." };
+}
+
+export async function buscarCustosPeriodoAction(pesagemId: string): Promise<
+  | {
+      ok: true;
+      dataPesagem: string;
+      dataAnterior: string | null;
+      linhas: LinhaCustoPeriodo[];
+    }
+  | { ok: false; message: string }
+> {
+  const consulta = await consultarCustosPeriodo(pesagemId);
+
+  if (!consulta) {
+    return { ok: false, message: "Pesagem não encontrada." };
+  }
+
+  return {
+    ok: true,
+    dataPesagem: consulta.dataPesagem,
+    dataAnterior: consulta.dataAnterior,
+    linhas: consulta.linhas,
+  };
+}
+
+export async function aplicarCustosPeriodoAction(
+  pesagemId: string,
+  lancamentoIds: string[],
+): Promise<{ ok: true; total: number } | { ok: false; message: string }> {
+  const resultado = await gravarCustosPeriodo(pesagemId, lancamentoIds);
+
+  if (resultado.ok) {
+    const fazenda = await getFazendaAtiva();
+    const sessao = await getSessaoPesagem(pesagemId);
+
+    if (fazenda) {
+      await atualizarEstatisticas(pesagemId, fazenda.id);
+    }
+
+    revalidarPesagens({
+      pesagem: pesagemId,
+      lote: sessao?.cabecalho.lote_id,
+    });
+  }
+
+  return resultado;
 }

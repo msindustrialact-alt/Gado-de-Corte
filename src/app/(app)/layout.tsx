@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { getFazendaAtiva } from "@/lib/fazenda";
+import { lerFazendaPainelAtual } from "@/lib/fazenda-painel-servidor";
 import { createClient } from "@/lib/supabase/server";
 import {
   avatarDoUsuario,
@@ -17,12 +18,16 @@ export default async function LayoutApp({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const fazenda = await getFazendaAtiva();
+  const [fazenda, fazendaPainel] = await Promise.all([
+    getFazendaAtiva(),
+    lerFazendaPainelAtual(undefined),
+  ]);
 
   const nome = user ? nomeDoUsuario(user) : "Usuário";
 
   return (
     <AppShell
+      fazenda={fazendaPainel}
       usuario={{
         nome,
         iniciais: iniciaisDoNome(nome),

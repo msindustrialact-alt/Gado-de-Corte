@@ -54,7 +54,6 @@ export async function getBaseLucratividadeLote(
   const [
     { data: lote, error: erroLote },
     { data: animais, error: erroAnimais },
-    { data: pesagens, error: erroPesagens },
     { data: insumos, error: erroInsumos },
   ] = await Promise.all([
     supabase
@@ -70,13 +69,6 @@ export async function getBaseLucratividadeLote(
       .eq("fazenda_id", fazenda.id)
       .eq("lote_id", loteId)
       .eq("status", "ativo")
-      .is("deleted_at", null),
-    supabase
-      .from("pesagens")
-      .select("custo_alimentacao")
-      .eq("fazenda_id", fazenda.id)
-      .eq("lote_id", loteId)
-      .eq("status", "concluida")
       .is("deleted_at", null),
     db
       .from("vw_custos_lote_insumos")
@@ -97,10 +89,6 @@ export async function getBaseLucratividadeLote(
 
   if (erroAnimais) {
     console.error(erroAnimais);
-  }
-
-  if (erroPesagens) {
-    console.error(erroPesagens);
   }
 
   if (erroInsumos) {
@@ -125,11 +113,6 @@ export async function getBaseLucratividadeLote(
     0,
   );
 
-  const custoPesagens = (pesagens ?? []).reduce(
-    (acc, item) => acc + numeroOuZero(item.custo_alimentacao),
-    0,
-  );
-
   const custosInsumos = (insumos ?? null) as CustosInsumosLote | null;
   const custoAlimentacaoLancamentos = numeroOuZero(
     custosInsumos?.custo_alimentacao,
@@ -146,7 +129,7 @@ export async function getBaseLucratividadeLote(
     peso_atual_medio: media(pesosAtuais),
     custo_aquisicao_total: custoAquisicao,
     custo_suplementacao_ate_hoje:
-      custoPesagens + custoAlimentacaoLancamentos + custoOutroInsumos,
+      custoAlimentacaoLancamentos + custoOutroInsumos,
     custo_sanidade_ate_hoje: custoSanidade,
     hoje: hojeISO(),
   };

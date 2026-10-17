@@ -15,15 +15,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import type { DadosUsuario } from "@/components/layout/types";
+import type { FazendaPainel } from "@/lib/fazenda-painel";
 
 const CHAVE_SIDEBAR = "fazenda-joana:sidebar-recolhida";
 
 export function AppShell({
   children,
   usuario,
+  fazenda,
 }: {
   children: ReactNode;
   usuario: DadosUsuario;
+  fazenda: FazendaPainel;
 }) {
   const [recolhida, setRecolhida] = useState(false);
   const [mobileAberto, setMobileAberto] = useState(false);
@@ -91,7 +94,7 @@ export function AppShell({
         </Sheet>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <Cabecalho usuario={usuario} onMenu={aoClicarMenu} />
+          <Cabecalho usuario={usuario} fazenda={fazenda} onMenu={aoClicarMenu} />
           <main className="flex-1 overflow-x-hidden pb-[calc(88px+env(safe-area-inset-bottom))] lg:pb-0">
             {children}
           </main>

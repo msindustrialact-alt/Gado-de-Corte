@@ -1,3 +1,4 @@
+import { ratearMl } from "@/lib/custos-periodo/calculo";
 import { getFazendaAtiva } from "@/lib/fazenda";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,7 +46,7 @@ export async function getMedicamentos(): Promise<Medicamento[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("medicamentos")
-    .select("id, nome, via, dose, carencia_dias, ativo")
+    .select("id, nome, via, dose, carencia_dias, produto_id, ativo")
     .eq("fazenda_id", fazenda.id)
     .eq("ativo", true)
     .is("deleted_at", null)
@@ -62,6 +63,7 @@ export async function getMedicamentos(): Promise<Medicamento[]> {
       via: viaDe(item.via),
       dose: item.dose,
       carencia_dias: item.carencia_dias,
+      produto_id: item.produto_id,
       ativo: item.ativo,
   }));
 }
@@ -72,7 +74,7 @@ export async function getSessoesMedicacao(): Promise<SessaoMedicacao[]> {
   const { data, error } = await supabase
     .from("medicacao_sessoes")
     .select(
-      "id, data, qtd_aplicados, observacoes, dose, carencia_dias, medicamento:medicamentos ( nome, via, dose, carencia_dias ), lote:lotes ( nome )",
+      "id, data, lote_id, qtd_aplicados, observacoes, dose, carencia_dias, medicamento:medicamentos ( nome, via, dose, carencia_dias ), lote:lotes ( nome )",
     )
     .eq("fazenda_id", fazenda.id)
     .is("deleted_at", null)
@@ -100,6 +102,7 @@ export async function getSessoesMedicacao(): Promise<SessaoMedicacao[]> {
       via: viaDe(medicamento?.via ?? "injetavel"),
       dose: linha.dose ?? medicamento?.dose ?? null,
       carencia_dias: linha.carencia_dias ?? medicamento?.carencia_dias ?? null,
+      lote_id: linha.lote_id,
       lote_nome: lote?.nome ?? null,
     };
   });
@@ -112,7 +115,7 @@ export async function getAnimaisMedicacao(
   const supabase = await createClient();
   let consulta = supabase
     .from("animais")
-    .select("id, brinco, nome")
+    .select("id, brinco, nome, lote_id")
     .eq("fazenda_id", fazenda.id)
     .eq("status", "ativo")
     .is("deleted_at", null)
@@ -193,7 +196,7 @@ export async function registrarMedicacao(
 
   const { data: medicamento } = await supabase
     .from("medicamentos")
-    .select("id, dose, carencia_dias")
+    .select("id, dose, carencia_dias, produto_id")
     .eq("id", input.medicamentoId)
     .eq("fazenda_id", fazenda.id)
     .eq("ativo", true)
@@ -234,6 +237,11 @@ export async function registrarMedicacao(
   const loteId = input.loteId || null;
   const dose = input.dose.trim() || medicamento.dose;
   const carenciaDias = medicamento.carencia_dias;
+  const baixa = await prepararBaixaMl(input.mlTotal, medicamento.produto_id, novos);
+
+  if (baixa && !baixa.ok) {
+    return baixa;
+  }
   const { data: sessao, error: erroSessao } = await supabase
     .from("medicacao_sessoes")
     .insert({
@@ -245,6 +253,8 @@ export async function registrarMedicacao(
       observacoes: input.observacoes.trim() || null,
       dose,
       carencia_dias: carenciaDias,
+      ml_total: baixa && baixa.ok ? baixa.mlTotal : null,
+      custo_total: baixa && baixa.ok ? baixa.custoTotal : null,
       created_by: user?.id ?? null,
     })
     .select("id")
@@ -279,7 +289,103 @@ export async function registrarMedicacao(
     return { ok: false, message: "Não foi possível gravar os animais." };
   }
 
+  if (baixa && baixa.ok) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: erroSaida } = await (supabase as any).rpc("registrar_saida_ml", {
+      p_produto_id: baixa.produtoId,
+      p_data: input.data,
+      p_observacoes: input.observacoes.trim() || null,
+      p_partes: baixa.partes,
+    });
+
+    if (erroSaida) {
+      console.error(erroSaida);
+      await supabase
+        .from("medicacao_aplicacoes")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("sessao_id", sessao.id);
+      await supabase
+        .from("medicacao_sessoes")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", sessao.id);
+      const texto = String(erroSaida.message ?? "");
+      return {
+        ok: false,
+        message: texto.includes("Estoque insuficiente")
+          ? texto.replace("Estoque insuficiente", "Estoque insuficiente")
+          : "Não foi possível baixar os mL do estoque.",
+      };
+    }
+  }
+
   return { ok: true, quantidade: novos.length, ignorados: repetidos.size };
+}
+
+async function prepararBaixaMl(
+  mlTotal: number | null,
+  produtoId: string | null,
+  animalIds: string[],
+): Promise<
+  | { ok: true; produtoId: string; mlTotal: number; custoTotal: number; partes: unknown[] }
+  | { ok: false; message: string }
+  | null
+> {
+  if (mlTotal == null) {
+    return null;
+  }
+
+  if (!produtoId) {
+    return {
+      ok: false,
+      message: "Vincule um produto em mL neste medicamento antes de informar a saída.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: produto } = await supabase
+    .from("produtos")
+    .select("id, unidade, custo_medio, estoque_atual, ativo")
+    .eq("id", produtoId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!produto || !produto.ativo || produto.unidade.trim().toLowerCase() !== "ml") {
+    return { ok: false, message: "O produto vinculado precisa estar ativo e na unidade mL." };
+  }
+
+  if (Number(produto.estoque_atual) < mlTotal) {
+    return {
+      ok: false,
+      message: `Estoque insuficiente (disponível: ${produto.estoque_atual} mL).`,
+    };
+  }
+
+  const animais = await getAnimaisMedicacao("");
+  const contagem = new Map<string | null, number>();
+
+  for (const id of animalIds) {
+    const lote = animais.find((animal) => animal.id === id)?.lote_id ?? null;
+    contagem.set(lote, (contagem.get(lote) ?? 0) + 1);
+  }
+
+  const partes = ratearMl(
+    mlTotal,
+    Number(produto.custo_medio),
+    [...contagem.entries()].map(([loteId, cabecas]) => ({ loteId, cabecas })),
+  );
+
+  return {
+    ok: true,
+    produtoId,
+    mlTotal,
+    custoTotal: partes.reduce((total, parte) => total + parte.custo, 0),
+    partes: partes.map((parte) => ({
+      lote_id: parte.loteId,
+      cabecas: parte.cabecas,
+      ml: parte.ml,
+      custo: parte.custo,
+    })),
+  };
 }
 
 async function nomeEmUso(nome: string, ignorarId?: string) {
@@ -326,6 +432,7 @@ export async function criarMedicamento(
     via: input.via,
     dose: input.dose.trim(),
     carencia_dias: input.carenciaDias,
+    produto_id: input.produtoId,
     created_by: user?.id ?? null,
   });
 
@@ -359,6 +466,7 @@ export async function atualizarMedicamento(
       via: input.via,
       dose: input.dose.trim(),
       carencia_dias: input.carenciaDias,
+      produto_id: input.produtoId,
     })
     .eq("id", id)
     .eq("fazenda_id", fazenda.id)

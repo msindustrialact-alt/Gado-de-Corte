@@ -1122,6 +1122,7 @@ export type Database = {
           fazenda_id: string
           id: string
           nome: string
+          produto_id: string | null
           updated_at: string
           via: string
         }
@@ -1135,6 +1136,7 @@ export type Database = {
           fazenda_id: string
           id?: string
           nome: string
+          produto_id?: string | null
           updated_at?: string
           via: string
         }
@@ -1148,6 +1150,7 @@ export type Database = {
           fazenda_id?: string
           id?: string
           nome?: string
+          produto_id?: string | null
           updated_at?: string
           via?: string
         }
@@ -1173,6 +1176,8 @@ export type Database = {
           id: string
           lote_id: string | null
           medicamento_id: string
+          ml_total: number | null
+          custo_total: number | null
           observacoes: string | null
           qtd_aplicados: number | null
           updated_at: string
@@ -1188,6 +1193,8 @@ export type Database = {
           id?: string
           lote_id?: string | null
           medicamento_id: string
+          ml_total?: number | null
+          custo_total?: number | null
           observacoes?: string | null
           qtd_aplicados?: number | null
           updated_at?: string
@@ -1203,6 +1210,8 @@ export type Database = {
           id?: string
           lote_id?: string | null
           medicamento_id?: string
+          ml_total?: number | null
+          custo_total?: number | null
           observacoes?: string | null
           qtd_aplicados?: number | null
           updated_at?: string
