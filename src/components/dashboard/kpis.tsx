@@ -9,17 +9,15 @@ import { formatarDecimal, formatarInteiro, formatarMoeda } from "@/lib/formataca
 export function KpisDashboard({
   kpis,
   pesagensCusto,
-  lotes,
 }: {
   kpis: Kpi[];
   pesagensCusto: PesagemCustoCard[];
-  lotes: { id: string; nome: string }[];
 }) {
   return (
     <div className="grid grid-cols-6 gap-2 lg:grid-cols-5 lg:gap-3">
       {kpis.map((kpi, indice) =>
         kpi.id === "custo" ? (
-          <CardCustoArroba key={kpi.id} pesagens={pesagensCusto} lotes={lotes} />
+          <CardCustoArroba key={kpi.id} pesagens={pesagensCusto} />
         ) : (
         <article
           key={kpi.id}

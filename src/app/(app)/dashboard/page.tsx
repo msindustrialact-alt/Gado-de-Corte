@@ -56,11 +56,11 @@ export default async function PaginaDashboard({ searchParams }: Props) {
           key={fazendaPainel}
           kpis={kpis}
           pesagensCusto={custoArroba.pesagens}
-          lotes={custoArroba.lotes}
         />
 
-        <div className="lg:hidden">
+        <div className="flex flex-col gap-3 lg:hidden">
           <DistribuicaoRebanho fatias={rebanho} />
+          {propriedade ? null : <RebanhoPorFazenda itens={rebanhoFazenda} />}
         </div>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -69,18 +69,12 @@ export default async function PaginaDashboard({ searchParams }: Props) {
           <ProximosManejos manejos={manejos} />
         </div>
 
-        <div
-          className={`grid grid-cols-1 gap-3 ${
-            propriedade
-              ? "lg:grid-cols-2"
-              : "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)_minmax(0,1fr)]"
-          }`}
-        >
-          <div className="hidden lg:block">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)]">
+          <div className="hidden flex-col gap-3 lg:flex">
             <DistribuicaoRebanho fatias={rebanho} />
+            {propriedade ? null : <RebanhoPorFazenda itens={rebanhoFazenda} />}
           </div>
           <UltimasOcorrencias ocorrencias={ocorrencias} />
-          {propriedade ? null : <RebanhoPorFazenda itens={rebanhoFazenda} />}
         </div>
       </div>
     </div>
