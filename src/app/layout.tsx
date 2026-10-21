@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   applicationName: "Gado Corte",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Gado Corte",
   },
   formatDetection: {
@@ -51,10 +51,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#146C3B" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c1f16" },
-  ],
+  themeColor: "#146C3B",
   colorScheme: "light",
 };
 
@@ -62,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
+      style={{ backgroundColor: "#f2f5f3" }}
       className={cn(
         "h-full",
         "antialiased",
@@ -72,7 +70,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
       suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col overscroll-none">
+      <body
+        className="flex min-h-full flex-col overscroll-none"
+        style={{ backgroundColor: "#f2f5f3" }}
+      >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
           <Toaster position="top-center" offset="max(12px, env(safe-area-inset-top))" />
