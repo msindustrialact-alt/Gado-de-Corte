@@ -42,3 +42,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# rascunhos locais do planejamento
+.superpowers/

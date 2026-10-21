@@ -28,15 +28,15 @@ const ICONES: Record<
 
 export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
   return (
-    <CardPainel className="flex h-auto min-h-[278px] flex-col lg:h-[278px]">
-      <header className="mb-2 flex items-start justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-[17px] font-semibold text-texto">
-          <CalendarDays className="size-4 text-primary" aria-hidden />
-          Próximos Manejos
+    <CardPainel className="flex h-auto min-h-[278px] min-w-0 flex-col lg:h-[278px]">
+      <header className="mb-2 flex shrink-0 items-center justify-between gap-2">
+        <h2 className="flex min-w-0 items-center gap-2 text-[17px] font-semibold text-texto">
+          <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />
+          <span className="truncate">Próximos Manejos</span>
         </h2>
         <Link
           href="/pesagens"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium whitespace-nowrap text-primary-action hover:underline"
         >
           Ver todos
           <ArrowRight className="size-3.5" />
@@ -48,7 +48,7 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
           Nenhum lote atrasado para pesar.
         </p>
       ) : (
-        <ul className="flex flex-1 flex-col justify-between">
+        <ul className="flex flex-1 flex-col gap-1 lg:min-h-0 lg:overflow-y-auto">
           {manejos.map((manejo) => {
             const { dia, mes } = formatarDiaMesExtenso(manejo.data);
             const visual = ICONES[manejo.tipo];
@@ -58,7 +58,7 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
               <li key={manejo.id}>
                 <Link
                   href={manejo.href ?? "/pesagens"}
-                  className="flex items-center gap-2 rounded-lg hover:bg-muted/70"
+                  className="flex items-center gap-2 rounded-lg px-1 py-1.5 hover:bg-muted/70"
                 >
                   <span className="flex size-9 shrink-0 flex-col items-center justify-center rounded-[8px] bg-[#F2F5F3]">
                     <span className="text-[13px] leading-none font-bold text-texto">
@@ -85,7 +85,7 @@ export function ProximosManejos({ manejos }: { manejos: ProximoManejo[] }) {
                       {manejo.subtitulo}
                     </span>
                   </span>
-                  <ChevronRight className="size-4 shrink-0 text-texto-suave" />
+                  <ChevronRight className="hidden size-4 shrink-0 text-texto-suave sm:block" />
                 </Link>
               </li>
             );

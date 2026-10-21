@@ -33,24 +33,24 @@ export function UltimasOcorrencias({
   ocorrencias: Ocorrencia[];
 }) {
   return (
-    <CardPainel className="flex h-auto min-h-[242px] flex-col lg:h-[242px]">
-      <header className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-[17px] font-semibold text-texto">
-          <ClipboardList className="size-4 text-primary" aria-hidden />
-          Últimas Ocorrências
+    <CardPainel className="flex h-auto min-h-[242px] min-w-0 flex-col lg:h-[242px]">
+      <header className="mb-3 flex shrink-0 items-center justify-between gap-2">
+        <h2 className="flex min-w-0 items-center gap-2 text-[17px] font-semibold text-texto">
+          <ClipboardList className="size-4 shrink-0 text-primary" aria-hidden />
+          <span className="truncate">Últimas Ocorrências</span>
         </h2>
         <Link
           href="/pesagens"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary-action hover:underline"
+          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium whitespace-nowrap text-primary-action hover:underline"
         >
           Ver todas
           <ArrowRight className="size-3.5" />
         </Link>
       </header>
 
-      <ul className="flex flex-1 flex-col justify-between">
+      <ul className="flex flex-1 flex-col gap-1 lg:min-h-0 lg:overflow-y-auto">
         {ocorrencias.length === 0 ? (
-          <li className="flex flex-1 items-center justify-center text-sm text-texto-suave">
+          <li className="flex flex-1 items-center justify-center text-center text-sm text-texto-suave">
             Pesagens, vacinas e medicações aparecem aqui.
           </li>
         ) : (
@@ -62,7 +62,7 @@ export function UltimasOcorrencias({
               <li key={ocorrencia.id}>
                 <Link
                   href={ocorrencia.href ?? "/pesagens"}
-                  className="flex items-center gap-2.5 rounded-lg hover:bg-muted/70"
+                  className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 hover:bg-muted/70"
                 >
                   <span
                     className={cn(
@@ -78,11 +78,8 @@ export function UltimasOcorrencias({
                       {ocorrencia.titulo}
                     </span>
                     <span className="block truncate text-xs text-texto-suave">
-                      {ocorrencia.subtitulo}
+                      {ocorrencia.subtitulo} · {formatarDiaMes(ocorrencia.data)}
                     </span>
-                  </span>
-                  <span className="shrink-0 text-xs tabular-nums text-texto-suave">
-                    {formatarDiaMes(ocorrencia.data)}
                   </span>
                 </Link>
               </li>
