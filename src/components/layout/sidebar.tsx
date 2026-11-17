@@ -21,6 +21,7 @@ import {
   Warehouse,
   Weight,
   Wheat,
+  Bot,
 } from "lucide-react";
 
 import { IconeBoi } from "@/components/icons/icone-boi";
@@ -44,6 +45,7 @@ import { cn } from "@/lib/utils";
 
 const ICONES: Record<Exclude<IconeNav, "animais">, LucideIcon> = {
   inicio: House,
+  jarvis: Bot,
   lotes: Layers,
   pesagens: Weight,
   sanidade: HeartPulse,

@@ -13,7 +13,8 @@ export type IconeNav =
   | "estoque"
   | "relatorios"
   | "cadastros"
-  | "configuracoes";
+  | "configuracoes"
+  | "jarvis";
 
 export type FilhoNav = {
   titulo: string;
@@ -29,6 +30,7 @@ export type ItemNav = {
 
 export const ITENS_NAV: ItemNav[] = [
   { titulo: "Início", href: "/dashboard", icone: "inicio" },
+  { titulo: "J.A.R.V.I.S", href: "/jarvis", icone: "jarvis" },
   { titulo: "Animais", href: "/animais", icone: "animais" },
   { titulo: "Lotes", href: "/lotes", icone: "lotes" },
   { titulo: "Pesagens", href: "/pesagens", icone: "pesagens" },
